@@ -9,26 +9,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Install Dependencies
         run: npm ci --production
-      
-      - name: Build
-        run: npm run build 2>/dev/null || true
-      
-      - name: Deploy to Server
+
+      - name: Deploy to Gateway VPS (Hostinger)
         env:
           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
         run: |
           mkdir -p ~/.ssh
           echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H 10.10.10.99 >> ~/.ssh/known_hosts
-          
-          scp -i ~/.ssh/deploy_key -r . details@10.10.10.99:/opt/details-gateway/
-          ssh -i ~/.ssh/deploy_key details@10.10.10.99 'cd /opt/details-gateway && npm install --production && systemctl restart details-gateway'
+          ssh-keyscan -H 179.198.192.141 >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/deploy_key root@179.198.192.141 << 'REMOTE'
+          set -e
+          cd /opt/details-gateway
+          git pull origin master
+          npm install --production
+          sudo -u postgres psql details_gateway -f migrations/*.sql 2>/dev/null || true
+          chown -R details-gateway:details-gateway /opt/details-gateway
+          systemctl restart details-gateway
+          sleep 2
+          systemctl is-active details-gateway
+          REMOTE
