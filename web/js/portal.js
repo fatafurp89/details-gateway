@@ -90,14 +90,14 @@
     headlinks.append(a);
   }
   const grid = $('grid');
+  const toolsbar = $('toolsbar');
   const cards = new Map(); // key -> tile element (grid and compact), for the attention badges
+  let toolsCount = 0;
   for (const s of me.systems.filter((x) => x.placement !== 'header')) {
+    const isCompact = s.placement === 'compact';
     const a = document.createElement(s.href ? 'a' : 'div');
-    a.className = 'card' + (s.href ? '' : ' disabled') + (s.placement === 'compact' ? ' compact' : ''); // compact: أيقونة واسم فقط (الروابط، المرفقات، الإعدادات)
+    a.className = isCompact ? 'tool-chip' : 'card' + (s.href ? '' : ' disabled'); // أدوات مساعدة صغيرة في شريط منفصل، بدون وصف أو شارة حالة
     if (s.href) { a.href = s.href; a.target = '_blank'; a.rel = 'noopener'; } // كل الأنظمة تُفتح في تبويب جديد لتبقى البوابة مفتوحة
-    const badge = document.createElement('span');
-    badge.className = 'badge ' + (s.status || 'soon');
-    badge.textContent = badgeText[s.status] || badgeText.soon;
     const icon = document.createElement('div');
     icon.className = 'icon'; icon.setAttribute('aria-hidden', 'true');
     // استخدم الأيقونة المخصصة إذا كانت موجودة (مثل mail, whatsapp، إلخ)، وإلا استخدم الرمز النصي
@@ -112,6 +112,15 @@
       icon.textContent = s.icon || '◼';
     }
     const h = document.createElement('h2'); h.textContent = s.name;
+    if (isCompact) {
+      a.append(icon, h);
+      toolsbar.append(a);
+      toolsCount++;
+      continue;
+    }
+    const badge = document.createElement('span');
+    badge.className = 'badge ' + (s.status || 'soon');
+    badge.textContent = badgeText[s.status] || badgeText.soon;
     const p = document.createElement('p'); p.textContent = s.description || '';
     a.append(badge, icon, h, p);
     cards.set(s.key, a);
@@ -119,6 +128,7 @@
     grid.append(a);
     if (s.href && s.local_host && s.mode === 'proxy') probeLocal(a, s);
   }
+  toolsbar.hidden = toolsCount === 0;
   // شارات الانتباه: عدّاد أحمر (أو كهرماني للمنشأة) على الزاوية العلوية اليسرى لكل بطاقة، يختفي عند الصفر؛ التلميح = الوصف
   const fromLegacy = (tb) => { const o = {}; if (tb && tb.notifications > 0) o.notifications = { count: tb.notifications, label: 'إشعارات غير مقروءة', tone: 'red' }; if (tb && tb.company > 0) o.company = { count: tb.company, label: 'عناصر منتهية أو تنتهي خلال 30 يومًا', tone: 'amber' }; return o; };
   function applyBadges(badges) {

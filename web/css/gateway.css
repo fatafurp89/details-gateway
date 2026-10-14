@@ -42,6 +42,11 @@ main{flex:1; width:min(1180px,92vw); margin:0 auto; padding:26px 0 40px}
 .badge.off{background:#fef2f2; color:var(--danger); border-color:#fecaca}
 .host{font-size:11px; color:#94a3b8; direction:ltr; text-align:left; font-family:Arial,Tahoma,sans-serif}
 .note{margin-top:22px; background:#fffbeb; border-right:4px solid var(--gold); padding:10px 14px; border-radius:8px; color:#78350f; font-size:14px}
+.tools-bar{margin-top:28px; padding-top:18px; border-top:1px dashed var(--line); display:flex; gap:14px; flex-wrap:wrap; justify-content:center; align-items:center}
+.tool-chip{display:flex; flex-direction:column; align-items:center; gap:6px; text-decoration:none; color:inherit; padding:8px 14px; border-radius:12px; border:1px solid transparent; transition:background .12s ease, border-color .12s ease}
+.tool-chip:hover{background:var(--g-soft); border-color:var(--line)}
+.tool-chip .icon{width:32px; height:32px; border-radius:9px; font-size:16px}
+.tool-chip h2{margin:0; font-size:12px; font-weight:600; color:var(--mut)}
 footer{border-top:1px solid var(--line); background:#fff; color:var(--mut); font-size:12.5px; padding:12px 5vw; display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
 .sep{opacity:.5}
 @media (max-width:640px){
