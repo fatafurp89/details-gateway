@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ar" dir="rtl" class="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>تسجيل الدخول · نظام ديتيلز لإدارة العمل</title>
+<link rel="icon" href="/static/assets/favicon.png">
+<link rel="stylesheet" href="/static/css/gateway.css?v=202610140905">
+<link rel="stylesheet" href="/static/css/login-theme.css?v=202610140905">
+</head>
+<body class="lt">
+
+<main class="auth">
+  <section class="panel" aria-labelledby="pg-title">
+    <header class="lt-head">
+      <img src="/static/assets/logo-details.png" alt="ديتيلز" class="lt-logo">
+      <h1 class="lt-title" id="pg-title">نظام ديتيلز لإدارة العمل</h1>
+      <p class="lt-sub">Details WMS</p>
+    </header>
+
+    <h2>تسجيل الدخول</h2>
+    <p class="lead">أدخل رقمك الوظيفي المكوّن من أربعة أرقام.</p>
+    <div class="err" id="err" role="alert" hidden></div>
+
+    <div class="digits" id="empno" aria-label="الرقم الوظيفي"></div>
+
+    <div id="found" hidden>
+      <div class="who-card">
+        <b id="fname"></b>
+        <span id="fmail"></span>
+        <span id="fmobile"></span>
+      </div>
+      <button class="btn primary block" id="send">أرسل رمز التحقق</button>
+    </div>
+    <p class="muted center" id="hint">يُرسل رمز التحقق إلى بريدك أو واتساب جوالك المسجّل لدى الشركة.</p>
+
+    <div id="gbox" hidden>
+      <div class="or">أو</div>
+      <a class="btn block" id="google" href="/auth/google/start">
+        <svg class="gicon" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+        الدخول بحساب Google
+      </a>
+    </div>
+
+    <div class="lt-info" role="group" aria-label="تاريخ اليوم">
+      <div class="lt-ic">
+        <span class="cal" aria-hidden="true"></span>
+        <div class="txt">
+          <span class="lbl">التاريخ الميلادي</span>
+          <span class="val" id="g-date">—</span>
+          <span class="sub" id="g-sub"></span>
+        </div>
+      </div>
+      <div class="lt-ic">
+        <span class="cal" aria-hidden="true"></span>
+        <div class="txt">
+          <span class="lbl">التاريخ الهجري</span>
+          <span class="val" id="h-date">—</span>
+          <span class="sub" id="h-sub"></span>
+        </div>
+      </div>
+    </div>
+
+    <p class="lt-ver">
+      <b>الإصدار 1.0.0</b><span class="sep">·</span>جميع الحقوق محفوظة © <span id="year"></span> شركة ديتيلز للاستشارات الهندسية
+      <br>الاستخدام للموظفين المصرح لهم فقط
+    </p>
+  </section>
+</main>
+
+<script src="/static/js/common.js?v=202610140905"></script>
+<script src="/static/js/login-theme.js?v=202610140905"></script>
+<script src="/static/js/login.js?v=202610140905"></script>
+</body>
+</html>

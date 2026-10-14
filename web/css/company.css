@@ -1,0 +1,200 @@
+/* بيانات المنشأة — تصميم الصفحة الجديدة (يُحمَّل بعد gateway.css). لا style مضمَّن: كل التنسيق هنا. */
+body.cx{background:#f2f6f4}
+body.cx main{width:min(1240px,94vw); padding-top:22px}
+.cx-layout{display:grid; grid-template-columns:220px minmax(0,1fr); gap:22px; align-items:start}
+.cx-main{min-width:0; display:flex; flex-direction:column; gap:22px}
+
+/* ---- القائمة الجانبية الثابتة (يمين في RTL) ---- */
+.cx-nav{position:sticky; top:14px; display:flex; flex-direction:column; gap:3px; background:#fff; border:1px solid var(--line); border-radius:18px; padding:10px; box-shadow:0 2px 10px rgba(15,23,42,.04)}
+.cx-nav a{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; color:#475569; text-decoration:none; font-weight:700; font-size:13.5px; border:1px solid transparent}
+.cx-nav a i{font-style:normal; width:22px; text-align:center; color:#94a3b8; font-size:15px}
+.cx-nav a:hover{background:#f6f8f7}
+.cx-nav a.on{background:var(--g-soft); color:var(--g-dark); border-color:#cfe9df}
+.cx-nav a.on i{color:var(--g)}
+.cx-nav .n{margin-inline-start:auto; font-style:normal; font-size:11px; min-width:20px; text-align:center; padding:0 6px; border-radius:99px; background:#e2e8f0; color:#475569}
+.cx-nav .n.bad{background:#fee2e2; color:#b91c1c}
+.cx-nav .n.warn{background:#fef3c7; color:#92400e}
+.cx-print{margin-top:6px}
+
+/* ---- الأقسام ---- */
+.cx-sec{scroll-margin-top:16px}
+.cx-h{margin:0 0 10px; font-size:19px; font-weight:800; color:var(--navy); display:flex; align-items:center; gap:10px}
+.cx-h::before{content:""; width:5px; height:20px; border-radius:3px; background:linear-gradient(var(--g),var(--gold))}
+.cx-sub{margin:20px 0 8px; font-size:15px; color:var(--navy)}
+.cx-sub:first-child{margin-top:0}
+.chead{margin-bottom:10px}
+.cnote{margin:8px 0 0; white-space:pre-wrap; font-size:13.5px; color:#334155}
+.cpad{padding:8px 12px; margin:0}
+@keyframes cxflash{0%{box-shadow:0 0 0 0 rgba(15,138,107,.55)}100%{box-shadow:0 0 0 14px rgba(15,138,107,0)}}
+#entities.flash{animation:cxflash .9s ease-out; border-radius:16px}
+
+/* ---- الأعلام ---- */
+.zf{display:inline-block; width:20px; height:20px; border-radius:50%; overflow:hidden; flex:none; box-shadow:0 0 0 1.5px #fff,0 1px 3px rgba(15,23,42,.35); vertical-align:middle}
+.zf.lg{width:42px; height:42px; box-shadow:0 0 0 2px #fff,0 2px 6px rgba(15,23,42,.3)}
+.zf svg{display:block; width:100%; height:100%}
+
+/* ---- الشارات ---- */
+.cx-chips{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px}
+.cx-chip{display:inline-flex; align-items:center; font-size:12px; font-weight:700; padding:2px 11px; border-radius:99px; border:1px solid var(--line); background:#f1f5f9; color:#475569}
+.cx-chip.ok{background:#ecfdf5; color:var(--ok); border-color:#bbf7d0}
+.cx-chip.warn{background:#fffbeb; color:var(--warn); border-color:#fde68a}
+.cx-chip.bad{background:#fef2f2; color:var(--danger); border-color:#fecaca}
+.cx-chip.wait{background:#fffbeb; color:#92400e; border-color:#e7c873; border-style:dashed}
+.cx-chip.gold{background:#fbf6e8; color:#8a6d1d; border-color:#ecdca6}
+.cx-chip.plain{background:#fff}
+
+/* ---- البطاقة الرئيسية ---- */
+.cx-hero{display:grid; grid-template-columns:auto minmax(0,1fr); gap:20px; padding:22px; background:linear-gradient(135deg,#fff 0%,#eef8f4 100%); border:1px solid #d6e8e0; border-radius:22px; box-shadow:0 6px 24px rgba(15,138,107,.07)}
+.cx-logo{width:96px; height:96px; object-fit:contain; background:#fff; border:1px solid var(--line); border-radius:20px; padding:10px}
+.cx-hero-top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.cx-hero h3{margin:2px 0 0; font-size:23px; font-weight:800; color:var(--navy); line-height:1.4}
+.cx-en{font-size:13px; color:var(--mut)}
+.cx-tag{display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--g-dark); background:var(--g-soft); border-radius:99px; padding:2px 12px 2px 8px}
+.cx-facts{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:10px; margin-top:16px}
+.cx-fact{background:rgba(255,255,255,.9); border:1px solid #e3ece8; border-radius:14px; padding:9px 13px; min-width:0}
+.cx-fact small{display:block; color:var(--mut); font-size:11.5px}
+.cx-fact b{display:block; font-size:14px; color:var(--ink); word-break:break-word}
+.cx-fact b small{display:block; margin-top:2px; font-weight:400; color:#475569; font-size:12px}
+.cx-fact .ltr, .ltr{direction:ltr; text-align:right}
+.cx-kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:14px}
+.cx-kpi{background:#fff; border:1px solid var(--line); border-radius:16px; padding:12px 16px; display:flex; align-items:baseline; gap:10px}
+.cx-kpi b{font-size:26px; line-height:1; color:var(--navy)}
+.cx-kpi span{font-size:12.5px; color:var(--mut)}
+.cx-kpi.warn b{color:var(--warn)} .cx-kpi.bad b{color:var(--danger)}
+.cx-strip{margin-top:14px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:12px 14px}
+.cx-strip.has{background:#fff7ed; border-color:#fed7aa}
+.cx-strip-h{display:block; margin-bottom:8px; color:#9a3412; font-size:14px}
+.cx-alerts{display:flex; flex-wrap:wrap; gap:8px}
+.cx-alert{display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #fed7aa; border-radius:12px; padding:6px 10px; font:inherit; font-size:13px; cursor:pointer; text-align:right}
+.cx-alert.urgent{border-color:#fca5a5}
+.cx-alert:hover{box-shadow:0 2px 8px rgba(15,23,42,.1)}
+.cx-alert-t{display:flex; flex-direction:column; line-height:1.35; font-weight:700}
+.cx-alert-t small{font-weight:400; color:var(--mut); font-size:11.5px}
+.cx-strip-f{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px}
+.cx-warn{margin-top:12px; background:#fffbeb; border:1px solid #fde68a; border-radius:14px; padding:10px 14px; font-size:13.5px; color:#78350f}
+.cx-warn ul{margin:6px 0 0; padding-inline-start:18px}
+.cx-more{margin-top:14px; background:#fff; border:1px solid var(--line); border-radius:16px; padding:0 14px}
+.cx-more summary{cursor:pointer; padding:12px 0; font-weight:700; color:var(--navy)}
+.cx-more[open] summary{border-bottom:1px solid var(--line); margin-bottom:12px}
+.cx-more .cgrid{padding-bottom:14px}
+
+/* ---- الكيانات ---- */
+.cx-etabs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
+.cx-etab{display:inline-flex; align-items:center; gap:8px; padding:7px 14px 7px 12px; background:#fff; border:1px solid var(--line); border-radius:99px; font:inherit; font-size:13.5px; font-weight:700; color:#334155; cursor:pointer; max-width:100%}
+.cx-etab:hover{border-color:var(--g)}
+.cx-etab.on{background:var(--g-dark); border-color:var(--g-dark); color:#fff}
+.cx-etab.pend{border-style:dashed; border-color:#e7c873}
+.cx-etab.on.pend{border-color:var(--g-dark)}
+.cx-etab-n{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:230px}
+.cx-etab em{font-style:normal; font-size:11px; min-width:20px; text-align:center; padding:0 6px; border-radius:99px; background:#e2e8f0; color:#334155}
+.cx-etab.on em{background:rgba(255,255,255,.22); color:#fff}
+.cx-etab .dot{width:9px; height:9px; border-radius:50%; background:#f59e0b}
+.cx-etab .dot.bad{background:#dc2626}
+.cx-etab.add{border-style:dashed; color:var(--g-dark)}
+.cx-epanel{padding:0; overflow:hidden; border-radius:18px}
+.cx-ehead{display:flex; align-items:center; gap:14px; padding:16px 18px; background:linear-gradient(135deg,#f8fbfa,#eef4f2); border-bottom:1px solid var(--line); flex-wrap:wrap}
+.cx-ehead-t{flex:1; min-width:220px}
+.cx-ehead-t h3{margin:0; font-size:18px; color:var(--navy)}
+.cx-ebody{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; padding:16px 18px}
+.cx-own-list{margin:0 0 6px; padding-inline-start:18px; font-size:13.5px}
+.cx-scope{display:flex; align-items:center; gap:10px; margin:12px 0 4px}
+.cx-person{display:flex; align-items:center; gap:10px}
+.cx-av{width:34px; height:34px; border-radius:50%; background:var(--navy); color:#fff; display:inline-grid; place-items:center; font-weight:800; font-size:12px; object-fit:cover; flex:none; border:2px solid var(--gold)}
+.cx-inl{display:inline-flex; align-items:center; gap:8px}
+
+/* ---- شريط النِّسب ---- */
+.csharebar{height:26px}
+.csharebar span{background:#94a3b8}
+.csharebar span.seg0{background:#0f8a6b} .csharebar span.seg1{background:#1e3a5f} .csharebar span.seg2{background:#bc9d59} .csharebar span.seg3{background:#0ea5e9}
+.csharebar span.rest{background:#f1f5f9; color:#64748b}
+
+/* ---- مخطط الهيكل ---- */
+.cstruct{background:#fff; border:1px solid var(--line); border-radius:20px; padding:14px 10px; overflow:auto}
+.cstruct-svg{display:block; margin:0 auto; max-width:100%; height:auto; font-family:Arial,Tahoma,sans-serif; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+.cs-probe{font-size:14px; font-weight:800; visibility:hidden}
+.cs-box{fill:#fff; stroke:#cbd5e1; stroke-width:1.4}
+.cs-node{cursor:pointer; outline:none}
+.cs-node:hover .cs-box,.cs-node:focus-visible .cs-box{stroke:var(--g); stroke-width:2.4}
+.cs-band{fill:#cbd5e1}
+.cs-ent.main .cs-box{stroke:var(--g); stroke-width:2}
+.cs-ent.main .cs-band{fill:var(--g)}
+.cs-ent.parent .cs-box{fill:var(--navy); stroke:var(--navy)}
+.cs-ent.parent .cs-band{fill:var(--gold)}
+.cs-ent.pending .cs-box{stroke:#d1b25f; stroke-dasharray:6 4}
+.cs-ent.pending .cs-band{fill:#ecdca6}
+.cs-ent.off .cs-box{opacity:.7}
+.cs-ent.sel .cs-box{stroke:#0ea5e9; stroke-width:3.2}
+.cs-name{font-size:14px; font-weight:800; fill:#0f172a}
+.cs-country{font-size:12.5px; font-weight:700; fill:#475569}
+.cs-kind{font-size:11px; fill:#64748b}
+.cs-doc{font-size:12px; fill:#334155}
+.cs-exp{font-size:11.5px; fill:#64748b}
+.cs-exp.expired{fill:#b91c1c} .cs-exp.expiring{fill:#b45309} .cs-exp.ok{fill:#15803d}
+.cs-dot{fill:#94a3b8} .cs-dot.ok{fill:#16a34a} .cs-dot.expiring{fill:#f59e0b} .cs-dot.expired{fill:#dc2626}
+.cs-pill{fill:#f1f5f9; stroke:#e2e8f0}
+.cs-pill.active{fill:#ecfdf5; stroke:#bbf7d0} .cs-pill.dormant{fill:#fffbeb; stroke:#fde68a} .cs-pill.closed{fill:#fef2f2; stroke:#fecaca} .cs-pill.wait{fill:#fffbeb; stroke:#e7c873}
+.cs-pill-t{font-size:11px; font-weight:700; fill:#475569}
+.cs-pill-t.active{fill:#15803d} .cs-pill-t.dormant{fill:#b45309} .cs-pill-t.closed{fill:#b91c1c} .cs-pill-t.wait{fill:#92400e}
+.cs-ent.parent .cs-name,.cs-ent.parent .cs-country{fill:#fff}
+.cs-ent.parent .cs-kind,.cs-ent.parent .cs-doc{fill:#cbd5e1}
+.cs-ent.parent .cs-exp{fill:#cbd5e1} .cs-ent.parent .cs-exp.ok{fill:#86efac} .cs-ent.parent .cs-exp.expiring{fill:#fcd34d} .cs-ent.parent .cs-exp.expired{fill:#fca5a5}
+.cs-flag-ring{stroke:rgba(15,23,42,.28); stroke-width:1}
+.cs-flag-x{fill:#94a3b8} .cs-flag-t{fill:#fff; font-size:9px; font-weight:800}
+.cs-own .cs-box{fill:#fffdf6; stroke:#ecdca6}
+.cs-own:hover .cs-box,.cs-own:focus-visible .cs-box{stroke:var(--gold)}
+.cs-av{fill:var(--navy)}
+.cs-av-t{fill:#fff; font-size:15px; font-weight:800}
+.cs-av-ring{stroke:var(--gold); stroke-width:2.2}
+.cs-basis{font-size:11.5px; font-weight:700; fill:#8a6d1d}
+.cs-edge{stroke:#94a3b8; stroke-width:2; stroke-linejoin:round}
+.cs-edge.own{stroke:var(--gold)}
+.cs-edge.dash{stroke-dasharray:6 5}
+.cs-lab rect{fill:#fff; stroke:#94a3b8; stroke-width:1.3}
+.cs-lab text{font-size:12px; font-weight:800; fill:var(--navy)}
+.cs-lab.own rect{fill:#fffbeb; stroke:var(--gold)}
+.cs-lab.own text{fill:#8a6d1d}
+.cx-legend{display:flex; flex-wrap:wrap; gap:16px; margin-top:10px; font-size:12.5px; color:var(--mut)}
+.cx-legend span{display:inline-flex; align-items:center; gap:6px}
+.cx-legend i{width:14px; height:14px; border-radius:4px; border:2px solid #cbd5e1; background:#fff}
+.cx-legend .lg-main{border-color:var(--g)} .cx-legend .lg-parent{background:var(--navy); border-color:var(--navy)}
+.cx-legend .lg-pend{border-color:#d1b25f; border-style:dashed} .cx-legend .lg-own{border-color:var(--gold); background:#fffdf6}
+
+/* ---- نافذة النماذج ---- */
+.cmodal{position:fixed; inset:0; z-index:70; background:rgba(15,23,42,.55); display:flex; align-items:flex-start; justify-content:center; padding:4vh 14px; overflow:auto}
+.cmodal .cform{width:min(820px,100%); max-height:92dvh; overflow:auto; margin:0; border:1px solid var(--line); border-radius:20px; background:#fff; padding:20px; box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.cmodal .cform h4{font-size:16px}
+body.cx-modal-open{overflow:hidden}
+
+/* ---- أجهزة صغيرة ---- */
+@media (max-width:900px){
+  .cx-layout{grid-template-columns:minmax(0,1fr); gap:14px}
+  .cx-nav{position:sticky; top:0; z-index:40; flex-direction:row; overflow-x:auto; gap:4px; padding:6px; border-radius:14px; scrollbar-width:none}
+  .cx-nav a{white-space:nowrap; padding:8px 12px}
+  .cx-nav a i{display:none}
+  .cx-print{display:none}
+  .cx-sec{scroll-margin-top:62px}
+  .cx-ebody{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .cx-hero{grid-template-columns:minmax(0,1fr); padding:16px}
+  .cx-logo{width:72px; height:72px}
+  .cx-hero h3{font-size:19px}
+  .cx-etab-n{max-width:150px}
+  .cstruct{padding:8px 4px}
+}
+
+/* ---- الطباعة ---- */
+@media print{
+  body.cx{background:#fff; display:block}
+  .top .user,.cx-nav,.cmodal,footer,.btn,.cell,.cx-etab.add,.cpreview,.toast{display:none !important}
+  .top{background:#fff !important; color:#000; padding:0 0 8px}
+  .logo{height:36px}
+  body.cx main{width:100%; padding:0}
+  .cx-layout{display:block}
+  .cx-sec{break-inside:avoid; margin-bottom:14px}
+  .cstruct,.cx-hero,.cx-fact,.cx-kpi,.ccard{box-shadow:none !important}
+  body.print-structure .cx-sec:not(#sec-structure),body.print-structure .top .sub{display:none !important}
+  body.print-structure .cstruct{border:0}
+  .tablewrap{overflow:visible}
+}
+.cform label:has(input[type=checkbox]){flex-direction:row; align-items:center; gap:8px; font-size:13px; color:var(--ink)}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the Details infra agent every 2 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=2min
+AccuracySec=15s
+Unit=infra-agent.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,15 @@
+[Unit]
+Description=Details infra agent (تقرير حالة الخادم إلى بوابة ديتيلز)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/details-gateway/infra-agent.env
+ExecStart=/usr/local/bin/infra-agent.sh
+TimeoutStartSec=90
+# root is needed for `wg show`; everything else is read-only
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+NoNewPrivileges=true

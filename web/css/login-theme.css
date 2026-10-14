@@ -1,0 +1,146 @@
+/* ===== Details Gateway — sign-in theme (login / otp / denied only) =====
+   Reproduces the old Details WMS login look: Riyadh skyline backdrop,
+   centred white card, deep navy + gold palette, Arial everywhere.
+   Loaded AFTER gateway.css; every rule is scoped to body.lt so other pages
+   are untouched. */
+
+:root{
+  --lt-navy:#15364a; --lt-navy-2:#1d4a63; --lt-navy-3:#0f2838;
+  --lt-gold:#c8a24a; --lt-gold-2:#e3c97c; --lt-gold-soft:#f6efdc;
+  --lt-ink:#1b2b38; --lt-mut:#5c6b78; --lt-line:#d9e1e8;
+  --lt-card:rgba(255,255,255,.94);
+}
+
+html.lt, body.lt, body.lt button, body.lt input, body.lt a{font-family:Arial,Helvetica,sans-serif}
+body.lt{background:#dfe8ef; color:var(--lt-ink); min-height:100dvh; display:flex; flex-direction:column; position:relative}
+
+/* ---- backdrop: skyline art + soft gradient overlay (fixed, behind everything) ---- */
+body.lt::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:#dfe8ef url(/static/assets/riyadh-skyline.svg) center bottom / cover no-repeat;
+}
+body.lt::after{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:linear-gradient(180deg, rgba(223,232,239,.55) 0%, rgba(255,255,255,.12) 40%, rgba(21,54,74,.38) 100%);
+}
+body.lt > *{position:relative; z-index:1}
+
+/* ---- centred card ---- */
+body.lt .auth{flex:1; display:grid; place-items:center; padding:28px 16px}
+body.lt .panel{
+  width:min(580px,100%); background:var(--lt-card); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.8); border-radius:24px; padding:30px 32px 22px;
+  box-shadow:0 26px 60px rgba(21,54,74,.28), 0 2px 6px rgba(21,54,74,.08);
+}
+
+/* ---- heading block ---- */
+.lt-head{text-align:center; margin:0 0 18px}
+.lt-logo{height:44px; width:auto; margin-bottom:8px}
+.lt-title{margin:0; font-size:32px; line-height:1.3; font-weight:900; color:var(--lt-navy); letter-spacing:-.2px}
+.lt-sub{margin:2px 0 0; font-size:19px; font-weight:700; color:#7d8893; letter-spacing:.5px; direction:ltr}
+.lt-head::after{content:""; display:block; width:72px; height:4px; border-radius:99px; background:var(--lt-gold); margin:14px auto 0}
+body.lt .panel h2{margin:0 0 4px; font-size:19px; font-weight:800; color:var(--lt-navy); text-align:center}
+body.lt .panel .lead{margin:0 0 16px; color:var(--lt-mut); font-size:14px; text-align:center}
+
+/* ---- digit boxes ---- */
+body.lt .digits{gap:12px; margin:6px 0 16px}
+body.lt .digits input{
+  width:60px; height:66px; font-family:Arial,Helvetica,sans-serif; font-size:30px; font-weight:900; color:var(--lt-navy);
+  border:2px solid var(--lt-line); border-radius:14px; background:#fff;
+}
+body.lt .digits input:focus{border-color:var(--lt-gold); box-shadow:0 0 0 4px rgba(200,162,74,.22)}
+body.lt .digits input:disabled{background:#f3f5f7; color:var(--lt-mut)}
+
+/* ---- buttons ---- */
+body.lt .btn{border-radius:16px; font-weight:800}
+body.lt .btn.primary{
+  background:var(--lt-navy); border-color:var(--lt-navy); color:var(--lt-gold);
+  min-height:56px; font-size:19px; gap:12px; box-shadow:0 12px 26px rgba(21,54,74,.32);
+}
+body.lt .btn.primary:hover{background:var(--lt-navy-2); border-color:var(--lt-navy-2); color:var(--lt-gold-2)}
+body.lt .btn.primary:focus-visible{outline:3px solid var(--lt-gold); outline-offset:2px}
+body.lt .btn.primary:disabled{box-shadow:none}
+/* sign-in icon (gold "enter" arrow), sits on the left of the label in RTL */
+body.lt .btn.primary::after{
+  content:""; flex:none; width:22px; height:22px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8a24a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4'/%3E%3Cpath d='M10 17l5-5-5-5'/%3E%3Cpath d='M15 12H3'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+body.lt .btn#google{min-height:52px; font-size:16px; color:var(--lt-navy); border:2px solid var(--lt-line); background:#fff}
+body.lt .btn#google:hover{border-color:var(--lt-gold); background:#fffdf6}
+body.lt .gicon{width:22px; height:22px}
+body.lt .or{color:var(--lt-mut)}
+body.lt .or::before, body.lt .or::after{background:var(--lt-line)}
+
+/* ---- found employee card / notices ---- */
+body.lt .who-card{background:var(--lt-gold-soft); border:1px solid #e9dcb3; border-radius:14px}
+body.lt .who-card b{color:var(--lt-navy); font-size:17px}
+body.lt .err{border-radius:12px}
+body.lt .ok{border-radius:12px}
+body.lt .muted{color:var(--lt-mut)}
+
+/* ---- OTP page bits ---- */
+body.lt .greet{color:var(--lt-navy); font-size:22px}
+body.lt .greet small{color:var(--lt-gold); font-weight:700}
+body.lt .linkbtn{color:var(--lt-navy-2); font-weight:700}
+body.lt .linkbtn:disabled{color:var(--lt-mut); font-weight:400}
+body.lt .resend{margin-top:16px}
+
+/* ---- date info cards ---- */
+.lt-info{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-top:24px}
+.lt-ic{
+  display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #e6ebf0; border-radius:16px;
+  padding:10px 14px; box-shadow:0 8px 18px rgba(21,54,74,.08); min-width:0;
+}
+.lt-ic .cal{
+  flex:none; width:38px; height:38px; border-radius:12px; background:var(--lt-gold-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8a24a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='3'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18'/%3E%3Cpath d='M8 14h2M14 14h2M8 18h2M14 18h2'/%3E%3C/svg%3E") center/22px no-repeat;
+}
+.lt-ic .txt{min-width:0; display:flex; flex-direction:column; gap:1px}
+.lt-ic .lbl{font-size:12.5px; font-weight:700; color:var(--lt-navy)}
+.lt-ic .val{font-size:21px; font-weight:900; color:var(--lt-gold); direction:ltr; text-align:right; font-variant-numeric:tabular-nums; line-height:1.2}
+.lt-ic .sub{font-size:11.5px; color:var(--lt-mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+/* ---- version / copyright ---- */
+.lt-ver{margin:14px 0 0; text-align:center; font-size:12px; color:var(--lt-mut); line-height:1.6}
+.lt-ver b{color:var(--lt-navy); font-weight:700}
+.lt-ver .sep{opacity:.5; margin:0 4px}
+
+/* ---- denied page ---- */
+body.lt .lt-denied-icon{
+  width:64px; height:64px; margin:0 auto 10px; border-radius:50%; background:#fef2f2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b91c1c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M5.6 5.6l12.8 12.8'/%3E%3C/svg%3E") center/32px no-repeat;
+}
+body.lt .btn.primary.inline{display:inline-flex; min-width:240px; margin-top:6px}
+
+/* ---- mobile ---- */
+@media (max-width:640px){
+  body.lt .digits input{width:54px; height:60px; font-size:26px}
+}
+@media (max-width:480px){
+  body.lt .auth{padding:18px 12px}
+  body.lt .panel{padding:22px 16px 16px; border-radius:18px}
+  .lt-title{font-size:24px}
+  .lt-sub{font-size:16px}
+  body.lt .digits{gap:8px}
+  body.lt .digits input{width:50px; height:56px; font-size:24px}
+  body.lt .btn.primary{min-height:50px; font-size:17px}
+  .lt-info{grid-template-columns:1fr 1fr; gap:8px; margin-top:18px}
+  /* icon above text so the date never collides with the icon on narrow cards */
+  .lt-ic{flex-direction:column; align-items:center; text-align:center; padding:10px 8px; gap:6px}
+  .lt-ic .txt{align-items:center; width:100%}
+  .lt-ic .cal{width:32px; height:32px; background-size:19px}
+  .lt-ic .val{font-size:17px; text-align:center}
+  .lt-ic .sub{max-width:100%}
+  .lt-ic .lbl{font-size:11.5px}
+  .lt-ic .sub{font-size:10.5px}
+  body.lt .resend{flex-direction:column; gap:8px; align-items:stretch; text-align:center}
+}
+@media (max-width:360px){
+  .lt-info{grid-template-columns:1fr}
+  body.lt .digits input{width:46px; height:52px}
+}
+@media (prefers-reduced-motion:no-preference){
+  body.lt .panel{animation:lt-in .35s ease-out}
+  @keyframes lt-in{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+}
+body.lt .who-card{text-align:center}
+body.lt .who-card b, body.lt .who-card span{text-align:center; display:block}
+body.lt .who-card span{direction:ltr; unicode-bidi:plaintext}

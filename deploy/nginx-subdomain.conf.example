@@ -1,0 +1,87 @@
+# Example: a protected subdomain. Copy to /etc/nginx/sites-available/wms.details-wms.cloud
+# and change server_name, X-Gw-System and proxy_pass for each system.
+# Certificate: certbot certonly --webroot -w /var/www/portal -d wms.details-wms.cloud
+
+# Strip the gateway cookie before it reaches the upstream system (maps live in http context).
+# Define this map ONCE only, even when several protected subdomains reuse it.
+map $http_cookie $gw_cookie_stripped {
+    default $http_cookie;
+    "~^(?<gw_pre>.*?)(?:^|;\s*)dg_session=[^;]*(?<gw_post>.*)$" "$gw_pre$gw_post";
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name wms.details-wms.cloud;
+    location ^~ /.well-known/acme-challenge/ { root /var/www/portal; }
+    location / { return 301 https://$host$request_uri; }
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name wms.details-wms.cloud;
+
+    ssl_certificate     /etc/letsencrypt/live/wms.details-wms.cloud/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/wms.details-wms.cloud/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    server_tokens off;
+    client_max_body_size 200m;
+
+    # Every request is checked by the gateway first
+    auth_request /_gw/verify;
+    auth_request_set $gw_id    $upstream_http_x_gw_employee_id;
+    auth_request_set $gw_no    $upstream_http_x_gw_employee_no;
+    auth_request_set $gw_name  $upstream_http_x_gw_name;
+    auth_request_set $gw_email $upstream_http_x_gw_email;
+    auth_request_set $gw_role  $upstream_http_x_gw_role;
+    auth_request_set $gw_level $upstream_http_x_gw_level;
+
+    error_page 401 = @login;
+    error_page 403 = @denied;
+
+    location = /_gw/verify {
+        internal;
+        proxy_pass http://127.0.0.1:4000/_gw/verify;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header Host details-wms.cloud;
+        proxy_set_header Cookie $http_cookie;
+        proxy_set_header X-Gw-System wms;
+        proxy_set_header X-Original-URI $request_uri;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location @login {
+        return 302 https://details-wms.cloud/login?next=$scheme://$host$request_uri;
+    }
+    location @denied {
+        return 302 https://details-wms.cloud/denied?s=wms;
+    }
+
+    location / {
+        proxy_pass http://10.9.0.2:3200;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $http_connection;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header Cookie $gw_cookie_stripped;
+        # User identity from the gateway (client-supplied values are overwritten)
+        proxy_set_header X-Gw-Employee-Id $gw_id;
+        proxy_set_header X-Gw-Employee-No $gw_no;
+        proxy_set_header X-Gw-Name  $gw_name;   # URL-encoded UTF-8
+        proxy_set_header X-Gw-Email $gw_email;
+        proxy_set_header X-Gw-Role  $gw_role;
+        proxy_set_header X-Gw-Level $gw_level;
+        proxy_read_timeout 120s;
+    }
+}

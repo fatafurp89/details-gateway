@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>مركز الإشعارات · بوابة ديتيلز</title>
+<link rel="icon" href="/static/assets/favicon.png">
+<link rel="stylesheet" href="/static/css/gateway.css?v=202610140905">
+<link rel="stylesheet" href="/static/css/notifications.css?v=202610141020">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <img src="/static/assets/logo-details.png" alt="ديتيلز" class="logo">
+    <div>
+      <h1>مركز الإشعارات</h1>
+      <p class="sub">كل إشعاراتك من الأنظمة في مكان واحد؛ الإشعار يبقى في نظامه الأصلي أيضًا</p>
+    </div>
+  </div>
+  <div class="user">
+    <a class="btn ghost" href="/">بوابة ديتيلز</a>
+    <a class="btn ghost" href="/logout">خروج</a>
+  </div>
+</header>
+<main class="nwrap">
+  <div class="ntabs page" id="ntabs" role="tablist" aria-label="تصنيف الإشعارات"></div>
+  <div class="toolbar">
+    <select id="fsys" aria-label="النظام"><option value="">كل الأنظمة</option></select>
+    <label class="inline"><input type="checkbox" id="funread"> غير المقروء فقط</label>
+    <span class="spacer"></span>
+    <span class="muted small" id="summary"></span>
+    <button class="btn small" id="readall" type="button">تعليم الكل كمقروء</button>
+    <button class="btn small" id="refresh" type="button" title="تحديث">↻</button>
+  </div>
+  <section id="list"><p class="muted">جارٍ التحميل…</p></section>
+</main>
+<footer>
+  <span>© <span id="year"></span> ديتيلز للاستشارات الهندسية</span>
+  <span class="sep">·</span>
+  <span>النقر على الإشعار يفتح مصدره في تبويب جديد ويعلّمه كمقروء</span>
+</footer>
+<script src="/static/js/common.js?v=202610140905"></script>
+<script src="/static/js/notifications.js?v=202610141020"></script>
+</body>
+</html>

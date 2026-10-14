@@ -1,0 +1,39 @@
+[Unit]
+Description=Details Gateway (بوابة الدخول الموحد لديتيلز)
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=details-gateway
+Group=details-gateway
+WorkingDirectory=/opt/details-gateway
+EnvironmentFile=/etc/details-gateway/env
+Environment=NODE_ENV=production HOST=127.0.0.1 PORT=4000
+ExecStart=/usr/bin/node /opt/details-gateway/src/server.js
+Restart=on-failure
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+# «النسخ الاحتياطي» (pg_dump from /settings#backup) writes under backups/ ؛ ملفات مستندات «بيانات المنشأة» تحت files/
+ReadWritePaths=/opt/details-gateway/backups /opt/details-gateway/files
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

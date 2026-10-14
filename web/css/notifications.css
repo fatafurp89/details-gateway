@@ -1,0 +1,39 @@
+/* مركز الإشعارات: تبويبا «الأعمال» / «التقنية» في الجرس وفي صفحة /notifications. ملف مستقل عن gateway.css. Arial. */
+
+/* ---- التبويبان ---- */
+.ntabs{display:flex; gap:6px; padding:6px 8px 0; border-bottom:1px solid var(--line); background:#fff}
+.ntab{flex:1; display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 10px; font:700 13.5px/1.4 Arial,Tahoma,sans-serif; color:var(--mut);
+  background:none; border:0; border-bottom:3px solid transparent; border-radius:8px 8px 0 0; cursor:pointer}
+.ntab:hover{background:#f8fafc}
+.ntab[aria-selected="true"]{color:var(--navy); border-bottom-color:var(--g); background:var(--g-soft)}
+.ntab.tech[aria-selected="true"]{color:#475569; border-bottom-color:#64748b; background:#f1f5f9}
+.ntab-count{min-width:20px; height:20px; padding:0 6px; border-radius:99px; background:var(--danger); color:#fff; font:800 11px/20px Arial,Tahoma,sans-serif; text-align:center; font-variant-numeric:tabular-nums}
+.ntab.tech .ntab-count{background:#64748b}
+.ntab-count[hidden]{display:none}
+.ntabs.page{padding:0; margin:0 0 14px; background:none}
+.ntabs.page .ntab{flex:none; padding:10px 22px; font-size:15px}
+
+.nitem .nicon img{width:26px; height:26px; object-fit:contain}
+
+/* ---- الإشعار التقني: هادئ وأقل بروزًا ---- */
+.nitem.tech{background:#f8fafc; border-color:#e2e8f0; border-inline-start-color:#94a3b8}
+.nitem.tech.unread{background:#f1f5f9; border-inline-start-color:#64748b}
+.nitem.tech .nicon{background:#e2e8f0; filter:grayscale(.6)}
+.nitem.tech .nbody b{color:#334155}
+.nitem.tech .ndot{background:#64748b}
+.nitem .nplain{margin:6px 0 0; padding:0; list-style:none; font-size:12.5px; line-height:1.65; color:#475569}
+.nitem .nplain li{margin:0}
+.nitem .nplain b{display:inline; font-size:12.5px; color:#334155}
+.ndet-toggle{margin-top:6px}
+.ndetails{margin:6px 0 0; padding:8px 10px; background:#0f172a; color:#e2e8f0; border-radius:8px; font:12px/1.55 Consolas,Menlo,monospace; unicode-bidi:plaintext; text-align:start;
+  white-space:pre-wrap; word-break:break-word; max-height:220px; overflow:auto}
+
+/* ---- الجرس ---- */
+.bell-item.tech{background:#f8fafc; border-inline-start-color:#cbd5e1}
+.bell-item.tech.unread{border-inline-start-color:#64748b}
+.bell-item.tech b{color:#334155}
+.bell-menu .ntabs .ntab{font-size:13px; padding:7px 8px}
+.bell-item small.means{display:block; color:#64748b}
+
+/* ---- تصفية صفحة الإشعارات ---- */
+.nforbid{padding:16px; color:var(--mut)}

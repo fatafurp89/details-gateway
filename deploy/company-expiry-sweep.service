@@ -1,0 +1,32 @@
+[Unit]
+Description=Details company expiry sweep (فحص صلاحيات مستندات ومنصات المنشأة -> مركز الإشعارات)
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=details-gateway
+Group=details-gateway
+WorkingDirectory=/opt/details-gateway
+EnvironmentFile=/etc/details-gateway/env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /opt/details-gateway/src/jobs/expiry-sweep.js
+TimeoutStartSec=120
+StandardOutput=journal
+StandardError=journal
+
+# Hardening (same as details-gateway.service)
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+UMask=0077

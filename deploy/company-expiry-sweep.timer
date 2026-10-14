@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the Details company expiry sweep daily at 07:00 Riyadh time
+
+[Timer]
+# 07:00 Asia/Riyadh = 04:00 UTC (servers run UTC)
+OnCalendar=*-*-* 04:00:00
+RandomizedDelaySec=10min
+Persistent=true
+Unit=company-expiry-sweep.service
+
+[Install]
+WantedBy=timers.target

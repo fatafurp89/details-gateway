@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+  <!-- Stylised Riyadh skyline (KAFD towers, Kingdom Centre, Al Faisaliah, palms). Original vector art, royalty-free. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d7e3ec"/>
+      <stop offset=".55" stop-color="#eef3f6"/>
+      <stop offset="1" stop-color="#e9e1cf"/>
+    </linearGradient>
+    <linearGradient id="far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b9c7d2"/>
+      <stop offset="1" stop-color="#9fb0bf"/>
+    </linearGradient>
+    <linearGradient id="mid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8ea2b3"/>
+      <stop offset="1" stop-color="#5f788d"/>
+    </linearGradient>
+    <linearGradient id="near" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4f6a80"/>
+      <stop offset="1" stop-color="#2b4760"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e3c97c"/>
+      <stop offset="1" stop-color="#c8a24a"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f4b63"/>
+      <stop offset="1" stop-color="#15364a"/>
+    </linearGradient>
+    <radialGradient id="sun" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff6dc" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#fff6dc" stop-opacity="0"/>
+    </radialGradient>
+    <g id="palm">
+      <path d="M0 0 C -3 -40 -2 -80 0 -120" stroke="#1f3a2a" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M0 -120 C -30 -150 -70 -150 -95 -125 C -60 -140 -30 -135 0 -115 Z M0 -120 C 30 -150 70 -150 95 -125 C 60 -140 30 -135 0 -115 Z M0 -120 C -20 -165 -55 -185 -85 -180 C -50 -170 -20 -150 0 -115 Z M0 -120 C 20 -165 55 -185 85 -180 C 50 -170 20 -150 0 -115 Z M0 -120 C -5 -170 0 -200 10 -215 C 5 -185 5 -155 0 -115 Z M0 -120 C 5 -170 -5 -200 -15 -215 C -8 -185 -5 -155 0 -115 Z" fill="#1f3a2a"/>
+    </g>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1180" cy="250" r="260" fill="url(#sun)"/>
+
+  <!-- gold geometric accents (top-right), echoing the old system's artwork -->
+  <g opacity=".28">
+    <polygon points="1600,0 1600,260 1340,0" fill="url(#gold)"/>
+    <polygon points="1600,120 1600,420 1470,200" fill="#c8a24a" opacity=".6"/>
+    <polygon points="1250,0 1420,0 1300,140" fill="#15364a" opacity=".35"/>
+  </g>
+
+  <!-- far row -->
+  <g fill="url(#far)" opacity=".75">
+    <rect x="60" y="560" width="70" height="200"/>
+    <rect x="150" y="520" width="50" height="240"/>
+    <polygon points="230,760 230,500 275,470 320,500 320,760"/>
+    <rect x="360" y="580" width="90" height="180"/>
+    <rect x="1080" y="540" width="60" height="220"/>
+    <rect x="1160" y="590" width="100" height="170"/>
+    <polygon points="1300,760 1300,480 1350,450 1400,480 1400,760"/>
+    <rect x="1440" y="560" width="70" height="200"/>
+    <rect x="1530" y="600" width="60" height="160"/>
+  </g>
+
+  <!-- KAFD angular towers (mid) -->
+  <g fill="url(#mid)">
+    <polygon points="430,760 430,430 470,400 520,430 520,760"/>
+    <polygon points="540,760 540,470 580,440 640,470 640,760"/>
+    <polygon points="660,760 660,380 700,350 760,380 760,760"/>
+    <polygon points="900,760 900,450 960,420 1000,450 1000,760"/>
+    <polygon points="1020,760 1020,500 1050,480 1070,500 1070,760"/>
+  </g>
+  <!-- lit facets -->
+  <g fill="url(#gold)" opacity=".45">
+    <polygon points="470,400 520,430 520,760 470,760"/>
+    <polygon points="700,350 760,380 760,760 700,760"/>
+    <polygon points="960,420 1000,450 1000,760 960,760"/>
+  </g>
+
+  <!-- Kingdom Centre: tall tower with the arch opening -->
+  <g>
+    <path d="M790 760 L790 300 C790 190 820 130 850 100 C880 130 910 190 910 300 L910 760 Z" fill="url(#near)"/>
+    <path d="M820 300 C820 230 835 190 850 170 C865 190 880 230 880 300 L880 330 L820 330 Z" fill="#e9eef2"/>
+    <rect x="818" y="326" width="64" height="6" fill="#c8a24a"/>
+    <polygon points="850,100 910,300 910,760 850,760" fill="#c8a24a" opacity=".22"/>
+  </g>
+
+  <!-- Al Faisaliah: tapered tower with globe -->
+  <g>
+    <polygon points="200,760 200,520 260,230 300,230 360,520 360,760" fill="url(#near)"/>
+    <polygon points="280,230 300,230 360,520 360,760 280,760" fill="#c8a24a" opacity=".2"/>
+    <polygon points="268,230 292,230 280,160" fill="#2b4760"/>
+    <circle cx="280" cy="275" r="22" fill="#e3c97c"/>
+    <circle cx="280" cy="275" r="22" fill="none" stroke="#2b4760" stroke-width="2"/>
+  </g>
+
+  <!-- foreground blocks -->
+  <g fill="url(#near)">
+    <rect x="0" y="620" width="130" height="140"/>
+    <rect x="1120" y="600" width="110" height="160"/>
+    <rect x="1260" y="640" width="160" height="120"/>
+    <rect x="1480" y="600" width="120" height="160"/>
+  </g>
+  <!-- window grids -->
+  <g fill="#f3e9cf" opacity=".5">
+    <rect x="20" y="640" width="90" height="4"/><rect x="20" y="660" width="90" height="4"/><rect x="20" y="680" width="90" height="4"/><rect x="20" y="700" width="90" height="4"/>
+    <rect x="1140" y="620" width="70" height="4"/><rect x="1140" y="640" width="70" height="4"/><rect x="1140" y="660" width="70" height="4"/><rect x="1140" y="680" width="70" height="4"/>
+    <rect x="1500" y="620" width="80" height="4"/><rect x="1500" y="640" width="80" height="4"/><rect x="1500" y="660" width="80" height="4"/><rect x="1500" y="680" width="80" height="4"/>
+  </g>
+
+  <!-- ground -->
+  <rect x="0" y="740" width="1600" height="160" fill="url(#ground)"/>
+  <rect x="0" y="740" width="1600" height="3" fill="#c8a24a" opacity=".7"/>
+
+  <!-- palms -->
+  <use href="#palm" transform="translate(110 770)"/>
+  <use href="#palm" transform="translate(520 780) scale(.9)"/>
+  <use href="#palm" transform="translate(1010 790) scale(.8)"/>
+  <use href="#palm" transform="translate(1400 775)"/>
+  <use href="#palm" transform="translate(1560 790) scale(.85)"/>
+</svg>
