@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>إدارة مستخدمي مستكشف الملفات · بوابة ديتيلز</title>
+<link rel="icon" href="/static/assets/favicon.png">
+<link rel="stylesheet" href="/static/css/gateway.css?v=202610140905">
+<style>
+  table.sa-table{width:100%;border-collapse:collapse;margin-top:16px}
+  table.sa-table th,table.sa-table td{padding:10px 12px;border-bottom:1px solid #2a2a2a;text-align:right}
+  table.sa-table th{color:#999;font-weight:600;font-size:13px}
+  .sa-badge{padding:3px 10px;border-radius:20px;font-size:12px}
+  .sa-badge.yes{background:#1e5e3a;color:#9fe8b8}
+  .sa-badge.no{background:#5a3a1e;color:#f0c89f}
+  .sa-err{background:#5a1e1e;color:#f0a0a0;padding:10px 14px;border-radius:8px;margin-top:12px}
+</style>
+</head>
+<body data-page="storage-admin">
+<header class="top">
+  <div class="brand">
+    <img src="/static/assets/logo-details.png" alt="ديتيلز" class="logo">
+    <div>
+      <h1>إدارة مستخدمي مستكشف الملفات</h1>
+      <p class="sub">إنشاء حسابات وصول لأرشيف الشركة بناءً على صلاحيات الموظفين المسجّلة في البوابة</p>
+    </div>
+  </div>
+  <div class="user">
+    <a class="btn ghost" href="/">بوابة ديتيلز</a>
+    <a class="btn ghost" href="/logout">خروج</a>
+  </div>
+</header>
+<main class="ql-wrap">
+  <div id="err" hidden class="sa-err"></div>
+  <table class="sa-table">
+    <thead><tr><th>الرقم الوظيفي</th><th>الاسم</th><th>الحالة</th><th>حساب مستكشف الملفات</th><th></th></tr></thead>
+    <tbody id="rows"><tr><td colspan="5">جارٍ التحميل…</td></tr></tbody>
+  </table>
+</main>
+<script src="/static/js/storage-admin.js?v=1"></script>
+</body>
+</html>

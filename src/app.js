@@ -17,6 +17,7 @@ import companyRoutes from './routes/company.js';
 import companyStructureRoutes from './routes/company-structure.js';
 import settingsRoutes from './routes/settings.js';
 import legalRoutes from './routes/legal.js';
+import storageAdminRoutes from './routes/storage-admin.js';
 import { createSettingsStore } from './lib/settings-store.js';
 import { ipBlocked } from './lib/settings.js';
 
@@ -90,5 +91,6 @@ export async function buildApp({ cfg, db, logger = true }) {
   await app.register(companyRoutes);
   await app.register(companyStructureRoutes);
   await app.register(settingsRoutes);
+  await app.register(storageAdminRoutes);
   return app;
 }
