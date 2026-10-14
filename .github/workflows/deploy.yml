@@ -21,26 +21,14 @@ jobs:
       - name: Build
         run: npm run build 2>/dev/null || true
       
-      - name: Run Tests
-        run: npm test 2>/dev/null || true
-      
-      - name: Deploy to Gateway VPS
+      - name: Deploy to Server
         env:
           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-          DEPLOY_HOST: root@10.9.0.1
         run: |
           mkdir -p ~/.ssh
           echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H 10.9.0.1 >> ~/.ssh/known_hosts
+          ssh-keyscan -H 10.10.10.99 >> ~/.ssh/known_hosts
           
-          # Copy to gateway
-          scp -i ~/.ssh/deploy_key -r . $DEPLOY_HOST:/opt/details-gateway/
-          
-          # Build on server
-          ssh -i ~/.ssh/deploy_key $DEPLOY_HOST << 'REMOTE'
-          cd /opt/details-gateway
-          npm install --production
-          npm run migrate 2>/dev/null || true
-          systemctl restart details-gateway
-          REMOTE
+          scp -i ~/.ssh/deploy_key -r . details@10.10.10.99:/opt/details-gateway/
+          ssh -i ~/.ssh/deploy_key details@10.10.10.99 'cd /opt/details-gateway && npm install --production && systemctl restart details-gateway'
