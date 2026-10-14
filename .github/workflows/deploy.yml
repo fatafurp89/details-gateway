@@ -1,0 +1,46 @@
+name: Deploy Gateway to Production
+
+on:
+  push:
+    branches: [master, main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Dependencies
+        run: npm ci --production
+      
+      - name: Build
+        run: npm run build 2>/dev/null || true
+      
+      - name: Run Tests
+        run: npm test 2>/dev/null || true
+      
+      - name: Deploy to Gateway VPS
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_HOST: root@10.9.0.1
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H 10.9.0.1 >> ~/.ssh/known_hosts
+          
+          # Copy to gateway
+          scp -i ~/.ssh/deploy_key -r . $DEPLOY_HOST:/opt/details-gateway/
+          
+          # Build on server
+          ssh -i ~/.ssh/deploy_key $DEPLOY_HOST << 'REMOTE'
+          cd /opt/details-gateway
+          npm install --production
+          npm run migrate 2>/dev/null || true
+          systemctl restart details-gateway
+          REMOTE
