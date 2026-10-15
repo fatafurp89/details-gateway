@@ -12,7 +12,7 @@ test('validateHrEmployee: employee_no + full_name required, optional fields only
   const min = validateHrEmployee({ employee_no: ' 1012 ', full_name: ' محمد نظمي ' }).value;
   assert.deepEqual(min, { employee_no: '1012', full_name: 'محمد نظمي' });
   const full = validateHrEmployee({ employee_no: '1012', full_name: 'محمد', mobile: '+966590722827', email: 'M@Details-Consults.sa', google_email: '', department: 'الهندسة', title: 'مهندس', hr_status: 'active', active: 'false', photo_url: '/static/p.png', role: 'admin' }).value;
-  assert.equal(full.mobile, '0590722827');
+  assert.equal(full.mobile, '+966590722827');
   assert.equal(full.email, 'm@details-consults.sa');
   assert.equal(full.google_email, null);
   assert.equal(full.active, false);

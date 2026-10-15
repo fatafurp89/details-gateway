@@ -2,6 +2,7 @@
 import { normalizeMobile } from './mask.js';
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
+const MOBILE_RE = /^\+[1-9]\d{6,14}$/; // E.164: أي دولة، لا السعودية فقط (موظفون عن بُعد)
 const ROLES = ['admin', 'user'];
 const MODES = ['proxy', 'link', 'internal'];
 const STATUSES = ['live', 'soon', 'off'];
@@ -12,10 +13,11 @@ const toBool = (v) => !['0', 'false', 'no', 'معطل', 'غير نشط', 'لا']
 
 // Returns { value } or { error } with an Arabic message
 export function validateEmployee(input) {
+  const mobileRaw = clean(input.mobile);
   const v = {
     employee_no: clean(input.employee_no),
     full_name: clean(input.full_name).slice(0, 120),
-    mobile: input.mobile ? normalizeMobile(input.mobile) : null,
+    mobile: mobileRaw ? normalizeMobile(mobileRaw) : null,
     email: optEmail(input.email),
     google_email: optEmail(input.google_email),
     role: clean(input.role) || 'user',
@@ -24,7 +26,8 @@ export function validateEmployee(input) {
   };
   if (!/^\d{4}$/.test(v.employee_no)) return { error: 'الرقم الوظيفي يجب أن يكون أربعة أرقام' };
   if (v.full_name.length < 2) return { error: 'الاسم مطلوب' };
-  if (v.mobile && !/^05\d{8}$/.test(v.mobile)) return { error: 'رقم الجوال غير صحيح (05XXXXXXXX)' };
+  if (!mobileRaw) return { error: 'رقم الجوال مطلوب (بالصيغة الدولية، مثل ‎+9665XXXXXXXX‎)' };
+  if (!v.mobile || !MOBILE_RE.test(v.mobile)) return { error: 'رقم الجوال غير صحيح (بالصيغة الدولية، مثل ‎+9665XXXXXXXX‎)' };
   if (v.email && !EMAIL_RE.test(v.email)) return { error: 'البريد الإلكتروني غير صحيح' };
   if (v.google_email && !EMAIL_RE.test(v.google_email)) return { error: 'بريد جوجل غير صحيح' };
   if (v.role === 'مدير') v.role = 'admin';
@@ -42,8 +45,9 @@ export function validateHrEmployee(input) {
   if (!/^\d{4}$/.test(v.employee_no)) return { error: 'الرقم الوظيفي يجب أن يكون أربعة أرقام' };
   if (v.full_name.length < 2) return { error: 'الاسم مطلوب' };
   if (input.mobile !== undefined) {
-    v.mobile = clean(input.mobile) ? normalizeMobile(input.mobile) : null;
-    if (v.mobile && !/^05\d{8}$/.test(v.mobile)) return { error: 'رقم الجوال غير صحيح (05XXXXXXXX)' };
+    const mobileRaw = clean(input.mobile);
+    v.mobile = mobileRaw ? normalizeMobile(mobileRaw) : null;
+    if (mobileRaw && (!v.mobile || !MOBILE_RE.test(v.mobile))) return { error: 'رقم الجوال غير صحيح (بالصيغة الدولية، مثل ‎+9665XXXXXXXX‎)' };
   }
   if (input.email !== undefined) { v.email = optEmail(input.email); if (v.email && !EMAIL_RE.test(v.email)) return { error: 'البريد الإلكتروني غير صحيح' }; }
   if (input.google_email !== undefined) { v.google_email = optEmail(input.google_email); if (v.google_email && !EMAIL_RE.test(v.google_email)) return { error: 'بريد جوجل غير صحيح' }; }

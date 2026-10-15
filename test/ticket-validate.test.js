@@ -38,8 +38,9 @@ test('employee CSV import with Arabic headers', () => {
 });
 
 test('employee and system validation', () => {
-  assert.ok(validateEmployee({ employee_no: '1010', full_name: 'مدير', email: 'a@b.sa' }).value);
-  assert.ok(validateEmployee({ employee_no: '101', full_name: 'مدير', email: 'a@b.sa' }).error);
+  assert.ok(validateEmployee({ employee_no: '1010', full_name: 'مدير', email: 'a@b.sa', mobile: '+966501234567' }).value);
+  assert.ok(validateEmployee({ employee_no: '1010', full_name: 'مدير', email: 'a@b.sa' }).error); // الجوال إجباري الآن
+  assert.ok(validateEmployee({ employee_no: '101', full_name: 'مدير', email: 'a@b.sa', mobile: '+966501234567' }).error);
   assert.ok(validateEmployee({ employee_no: '1010', full_name: 'مدير', email: 'a@b.sa', mobile: '123' }).error);
   assert.ok(validateSystem({ key: 'wms', name_ar: 'نظام', mode: 'proxy', host: 'wms.details-wms.cloud' }).value);
   assert.ok(validateSystem({ key: 'wms', name_ar: 'نظام', mode: 'link', upstream: 'http://x' }).error);

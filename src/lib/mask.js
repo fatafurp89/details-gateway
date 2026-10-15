@@ -1,19 +1,27 @@
 // Masking for display on the login screen (pure)
 const DOT = '•';
 
+/**
+ * يطبّع أي جوال دولي إلى صيغة E.164 (+ ثم رمز الدولة والرقم، بلا مسافات). الافتراضي عند غياب رمز الدولة: السعودية (+966)،
+ * حتى تبقى الأرقام السعودية المحلية القديمة (05XXXXXXXX) صالحة، مع دعم كامل لأي دولة أخرى (موظفون عن بُعد).
+ */
 export function normalizeMobile(m) {
-  let d = String(m ?? '').replace(/[^\d+]/g, '');
-  if (d.startsWith('+966')) d = '0' + d.slice(4);
-  else if (d.startsWith('00966')) d = '0' + d.slice(5);
-  else if (d.startsWith('966') && d.length === 12) d = '0' + d.slice(3);
-  return d.replace(/\D/g, '');
+  let d = String(m ?? '').trim().replace(/[^\d+]/g, '');
+  if (!d) return null;
+  if (d.startsWith('+')) return '+' + d.slice(1).replace(/\D/g, '');
+  if (d.startsWith('00')) return '+' + d.slice(2).replace(/\D/g, '');
+  d = d.replace(/\D/g, '');
+  if (/^05\d{8}$/.test(d)) return '+966' + d.slice(1);        // محلي سعودي قديم
+  if (/^9665\d{8}$/.test(d)) return '+' + d;                  // سعودي بلا +
+  if (/^[1-9]\d{7,14}$/.test(d)) return '+' + d;              // دولي بلا + (يُفترض رمز الدولة موجود بالفعل)
+  return null;
 }
 
-// 0551234567 -> 0551•••••67 (fixed width so the length is not revealed)
+// +966551234567 -> +9665•••••67 (طول ثابت حتى لا يُكشف طول الرقم)
 export function maskMobile(m) {
   const d = normalizeMobile(m);
-  if (d.length < 7) return '';
-  return d.slice(0, 4) + DOT.repeat(5) + d.slice(-2);
+  if (!d || d.length < 8) return '';
+  return d.slice(0, 5) + DOT.repeat(5) + d.slice(-2);
 }
 
 // mohammed@details-consults.sa -> m•••@details-consults.sa

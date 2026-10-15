@@ -18,17 +18,19 @@ export function whatsappOtpConfig(env = process.env, proxyKey = env.GATEWAY_PROX
 }
 
 /**
- * تطبيع جوال سعودي إلى 9665xxxxxxxx (بلا +). يقبل 05…، 5…، +966…، 00966…، 966…، والأرقام العربية.
- * يعيد null لأي شيء آخر (الأرقام غير السعودية لا تُستعمل للدخول).
+ * تطبيع أي جوال دولي (مخزَّن بصيغة E.164 بـ+) إلى أرقام بلا + لإرسال واتساب، مثل 9665xxxxxxxx أو 14155xxxxxxx.
+ * يقبل أيضًا صيغًا سعودية قديمة بلا رمز دولة (05…، 5…) للتوافق مع بيانات أُدخلت قبل دعم الدول الأخرى.
+ * يعيد null لأي شيء غير صالح.
  */
 export function normalizeSaudiMobile(input) {
   let d = String(input ?? '').trim().replace(/[٠-٩]/g, (c) => String(c.charCodeAt(0) - 0x0660)).replace(/[^\d+]/g, '');
   if (!d) return null;
   if (d.startsWith('+')) d = d.slice(1); else if (d.startsWith('00')) d = d.slice(2);
   d = d.replace(/\D/g, '');
-  if (/^05\d{8}$/.test(d)) return '966' + d.slice(1);
-  if (/^5\d{8}$/.test(d)) return '966' + d;
-  if (/^9660?5\d{8}$/.test(d)) return '9665' + d.slice(-8);
+  if (/^05\d{8}$/.test(d)) return '966' + d.slice(1);       // سعودي محلي قديم بلا رمز دولة
+  if (/^5\d{8}$/.test(d)) return '966' + d;                 // سعودي محلي قديم بلا الصفر
+  if (/^9660?5\d{8}$/.test(d)) return '9665' + d.slice(-8);  // سعودي برمز الدولة (مع صفر زائد أحيانًا)
+  if (/^[1-9]\d{7,14}$/.test(d)) return d;                  // E.164 عام (أي دولة أخرى) بلا + — موظفون عن بُعد
   return null;
 }
 

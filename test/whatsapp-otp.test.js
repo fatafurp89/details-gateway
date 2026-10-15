@@ -4,10 +4,11 @@ import http from 'node:http';
 import { normalizeSaudiMobile, last4, decideChannel, sendWhatsappOtp, whatsappOtpConfig, OTP_CHANNELS } from '../src/lib/whatsapp-otp.js';
 import { validateSecurity, effective, DEFAULTS } from '../src/lib/settings.js';
 
-test('normalizeSaudiMobile: all common Saudi spellings → 9665xxxxxxxx', () => {
+test('normalizeSaudiMobile: all common Saudi spellings → 9665xxxxxxxx, plus any other country E.164 (موظفون عن بُعد)', () => {
   for (const v of ['0556186732', '556186732', '+966556186732', '00966556186732', '966556186732', '9660556186732', '+966 55 618 6732', '055-618-6732', '٠٥٥٦١٨٦٧٣٢'])
     assert.equal(normalizeSaudiMobile(v), '966556186732', v);
-  for (const v of ['', null, undefined, '05', '0112345678', '+971501234567', '96655618673', 'abc', '05561867321'])
+  assert.equal(normalizeSaudiMobile('+971501234567'), '971501234567'); // دولة أخرى: يُقبل الآن للموظفين عن بُعد
+  for (const v of ['', null, undefined, '05', '0112345678', 'abc', '05561867321'])
     assert.equal(normalizeSaudiMobile(v), null, String(v));
   assert.equal(last4('966556186732'), '****6732');
   assert.equal(last4(''), '');
@@ -18,7 +19,7 @@ test('decideChannel: email default; whatsapp needs a valid mobile; both; forced 
   assert.deepEqual(decideChannel({ pref: 'email', mobile: m, email: e }), { whatsapp: false, email: true, mobile: '966556186732', reason: 'pref_email' });
   assert.deepEqual(decideChannel({ pref: 'whatsapp', mobile: m, email: e }), { whatsapp: true, email: false, mobile: '966556186732', reason: 'pref_whatsapp' });
   assert.deepEqual(decideChannel({ pref: 'whatsapp', mobile: '', email: e }), { whatsapp: false, email: true, mobile: null, reason: 'no_mobile' });
-  assert.deepEqual(decideChannel({ pref: 'whatsapp', mobile: '+971501234567', email: e }).whatsapp, false); // non-Saudi → e-mail
+  assert.deepEqual(decideChannel({ pref: 'whatsapp', mobile: '+971501234567', email: e }).whatsapp, true); // دولة أخرى: صالح الآن (موظف عن بُعد)
   assert.deepEqual(decideChannel({ pref: 'both', mobile: m, email: e }), { whatsapp: true, email: true, mobile: '966556186732', reason: 'both' });
   assert.deepEqual(decideChannel({ pref: 'both', mobile: m, email: '' }), { whatsapp: true, email: false, mobile: '966556186732', reason: 'both' });
   assert.deepEqual(decideChannel({ pref: 'whatsapp', mobile: m, email: e, force: 'email' }), { whatsapp: false, email: true, mobile: '966556186732', reason: 'forced_email' });
