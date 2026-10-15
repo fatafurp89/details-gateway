@@ -249,7 +249,7 @@ html,body,button,input,select,textarea{font-family:Arial,Tahoma,sans-serif}
 
 /* اسم الموظف بخط مميز */
 .who b#uname{font-size:18px;font-weight:800;color:#c8a24a;letter-spacing:.2px;text-shadow:0 1px 0 rgba(0,0,0,.08)}
-.who .no{color:#64748b;font-size:12px}
+.who .no{color:rgba(255,255,255,.72);font-size:12px}
 
 /* ---- أزرار الرأس (placement = header، مثل «بوابتي») ---- */
 .headlinks{display:inline-flex; gap:6px; align-items:center}
