@@ -62,9 +62,12 @@ export async function buildApp({ cfg, db, logger = true }) {
     const type = String(reply.getHeader('content-type') || '');
     if (type.startsWith('text/html')) {
       const legal = /^\/(legal\/)?(privacy|privacy-policy|terms|terms-of-service|data-deletion|data-deletion-request)(\?|$)/.test(req.url || '');
+      // «الروابط السريعة» تُفتح داخل iframe من نفس صفحة البوابة (openQuickLinksModal) — تحتاج فتحًا
+      // من نفس الأصل فقط، وتبقى كل صفحة أخرى محمية بالكامل من أي تضمين (clickjacking).
+      const framable = /^\/links(\?|$)/.test(req.url || '');
       reply.header('Content-Security-Policy',
         "default-src 'self'; img-src 'self' data: https:; style-src 'self'" + (legal ? " 'unsafe-inline'" : '') + "; script-src 'self'; connect-src 'self'; " +
-        "frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
+        `frame-ancestors ${framable ? "'self'" : "'none'"}; base-uri 'none'; form-action 'self'`);
     }
     if (!req.url.startsWith('/static/')) reply.header('Cache-Control', 'no-store');
     return payload;

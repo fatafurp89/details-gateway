@@ -186,7 +186,7 @@ textarea{width:100%; min-height:120px; font:13px Arial,Tahoma,sans-serif; border
 .ispark-wrap{background:#f8fafc; border-radius:8px; padding:4px}
 .ispark{display:block; width:100%; height:auto}
 .qlm-overlay{position:fixed; inset:0; background:rgba(15,23,42,.55); display:grid; place-items:center; z-index:80; padding:3vh 3vw}
-.qlm-box{background:#fff; width:min(1180px,94vw); height:90vh; border-radius:16px; border:3px solid var(--gold); box-shadow:0 24px 70px rgba(0,0,0,.35); display:flex; flex-direction:column; overflow:hidden}
+.qlm-box{background:#fff; width:min(1600px,97vw); height:95vh; border-radius:16px; border:3px solid var(--gold); box-shadow:0 24px 70px rgba(0,0,0,.35); display:flex; flex-direction:column; overflow:hidden}
 .qlm-head{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 16px; background:var(--g-soft); border-bottom:1px solid var(--line)}
 .qlm-head b{color:var(--navy); font-size:15px}
 .qlm-frame{flex:1; width:100%; border:0}
