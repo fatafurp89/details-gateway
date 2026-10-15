@@ -23,7 +23,7 @@ window.dgInfra = async function dgInfra(h) {
 
   // رابط عميق من «بيانات المنشأة»: /infra#node=<key> يفتح بطاقة العقدة التي تحوي سر المنصة
   const hashNode = (location.hash.match(/^#node=([a-z0-9_-]{2,60})$/) || [])[1] || null;
-  let sub = hashNode ? 'tree' : (read('dg_infra_tab') || 'tree');
+  let sub = hashNode ? 'tree' : location.hash === '#resources' ? 'resources' : (read('dg_infra_tab') || 'map');
   let selected = (hashNode && byKey.has(hashNode) ? hashNode : null) || read('dg_infra_node') || null;
   const closed = new Set();
 
@@ -170,6 +170,42 @@ window.dgInfra = async function dgInfra(h) {
       table(['النظام', 'الجهاز', 'الخدمة', 'المنفذ', 'وحدة systemd', 'الرابط', 'ملاحظات', ''], rows));
   }
 
+  // ---------- mini sparkline (mem % or load1 over time) ----------
+  function sparkline(points, pick, max) {
+    const W = 220, H = 36, pad = 2;
+    const vals = points.map((p) => pick(p)).map((v) => (v == null ? null : Number(v)));
+    const known = vals.filter((v) => v != null);
+    if (!known.length) return el('p', { class: 'muted small' }, 'لا سجلات كافية بعد.');
+    const top = max || Math.max(...known, 1);
+    const stepX = (W - pad * 2) / Math.max(1, vals.length - 1);
+    let d = ''; vals.forEach((v, i) => { if (v == null) return; const x = pad + i * stepX, y = H - pad - (Math.min(v, top) / top) * (H - pad * 2); d += (d ? 'L' : 'M') + x + ' ' + y; });
+    const root = svg('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, class: 'ispark' }, svg('path', { d, fill: 'none', stroke: '#0f8a6b', 'stroke-width': 1.6 }));
+    return el('div', { class: 'ispark-wrap' }, root);
+  }
+
+  // ---------- resources dashboard: all live-agent nodes at a glance ----------
+  function resources(resData) {
+    if (!resData.nodes.length) return el('p', { class: 'muted' }, 'لا توجد أجهزة عليها وكيل بعد.');
+    const cards = resData.nodes.map((n) => {
+      const p = n.summary, hist = resData.history[n.key] || [];
+      const memP = p?.mem_pct ?? null;
+      const body = [
+        el('div', { class: 'ihead' }, dot(n.status), el('h3', {}, (ICON[n.kind] || '') + ' ' + n.name_ar), el('span', { class: 'spacer' }),
+          el('button', { class: 'btn small', on: { click: () => { location.hash = '#node=' + n.key; switchTo('tree'); } } }, 'التفاصيل')),
+        p ? el('dl', { class: 'iinfo' },
+          el('div', { class: 'ikv' }, el('dt', {}, 'الذاكرة'), el('dd', {}, bar(memP))),
+          el('div', { class: 'ikv' }, el('dt', {}, 'الحِمل'), el('dd', { class: 'ltr' }, (p.load || []).map((x) => Number(x).toFixed(2)).join(' · ') || '—')),
+          el('div', { class: 'ikv' }, el('dt', {}, 'وقت التشغيل'), el('dd', {}, p.uptime_ar || '—')),
+          p.disk_max_pct != null ? el('div', { class: 'ikv' }, el('dt', {}, 'أعلى قرص'), el('dd', {}, bar(p.disk_max_pct))) : null)
+          : el('p', { class: 'muted small' }, 'لا تقرير بعد.'),
+        el('h4', { class: 'small' }, 'الذاكرة خلال 24 ساعة'), sparkline(hist, (x) => x.mem ? pct(x.mem.used, x.mem.total) : null, 100),
+        n.last_report ? el('p', { class: 'muted small' }, 'آخر تقرير ' + fmt(n.last_report)) : null,
+      ];
+      return el('div', { class: 'icard' + (n.status !== 'up' ? ' off' : '') }, body);
+    });
+    return el('div', { class: 'ires-grid' }, cards);
+  }
+
   // ---------- node card ----------
   const panel = el('aside', { class: 'ipanel' });
   async function openNode(key, silent) {
@@ -210,6 +246,10 @@ window.dgInfra = async function dgInfra(h) {
       if ((p.disks || []).length) out.push(el('h4', {}, 'الأقراص'), el('div', { class: 'idisks' }, p.disks.map((x) => el('div', { class: 'idisk' },
         el('span', { class: 'ltr' }, x.mount), bar(pct(x.used, x.size), x.mount), el('span', { class: 'muted small ltr' }, gb(x.used) + ' / ' + gb(x.size))))));
       if ((p.services || []).length) out.push(el('h4', {}, 'الخدمات (systemd)'), el('div', { class: 'isvcs' }, p.services.map((s) => el('span', { class: 'pill ' + (s.active ? 'on' : 'off'), title: s.active ? 'يعمل' : 'متوقف' }, s.name))));
+      if ((d.history || []).length > 1) {
+        out.push(el('h4', {}, 'سجل الذاكرة (آخر التقارير)'), sparkline(d.history, (x) => x.mem ? pct(x.mem.used, x.mem.total) : null, 100));
+        out.push(el('h4', {}, 'سجل الحِمل (Load 1m)'), sparkline(d.history, (x) => x.load1, Math.max(1, ...d.history.map((x) => Number(x.load1) || 0))));
+      }
     } else if (p && p.probe) {
       out.push(el('h4', {}, 'آخر فحص'), el('p', { class: 'muted small' }, fmt(d.status.reported_at) + ' · ' + (p.ok ? 'يستجيب' + (p.ms != null ? ' خلال ' + p.ms + ' ms' : '') : 'لا يستجيب') + (p.via ? ' · من ' + (byKey.get(p.via)?.name_ar || p.via) : '')));
     } else if (n.status_source === 'agent') {
@@ -359,17 +399,25 @@ window.dgInfra = async function dgInfra(h) {
   // ---------- frame: sub-tabs + main area + panel ----------
   const main = el('div', { class: 'imain' });
   const frame = el('div', { class: 'infra' }, main, panel);
-  const tabs = el('nav', { class: 'subtabs' }, [['tree', 'الشجرة'], ['map', 'الخريطة'], ['services', 'تكوين ديتيلز']].map(([k, t]) => el('button', { type: 'button', class: k === sub ? 'on' : '', 'data-sub': k, on: { click: () => switchTo(k) } }, t)));
+  const tabs = el('nav', { class: 'subtabs' }, [['tree', 'الشجرة'], ['map', 'الخريطة'], ['resources', 'مراقبة الموارد'], ['services', 'تكوين ديتيلز']].map(([k, t]) => el('button', { type: 'button', class: k === sub ? 'on' : '', 'data-sub': k, on: { click: () => switchTo(k) } }, t)));
+  let resData = null;
   const alertsPill = el('span', { class: 'pill' });
   const head = el('div', { class: 'toolbar' }, tabs, el('span', { class: 'spacer' }), alertsPill,
     el('button', { class: 'btn small', on: { click: () => run(reload, 'تم التحديث') } }, 'تحديث'),
     el('button', { class: 'btn small primary', on: { click: () => nodeForm(null) } }, 'إضافة عقدة'));
   function switchTo(k) { sub = k; store('dg_infra_tab', k); tabs.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.sub === k)); paintMain(); }
-  function paintMain() {
+  async function paintMain() {
     const total = data.nodes.reduce((s, n) => s + n.alerts.length, 0);
     alertsPill.className = 'pill ' + (total ? 'off' : 'on'); alertsPill.textContent = total ? total + ' تنبيهات' : 'لا تنبيهات';
+    frame.classList.toggle('full', sub === 'services' || sub === 'resources');
+    if (sub === 'resources') {
+      main.replaceChildren(el('p', { class: 'muted' }, 'جارٍ التحميل…'));
+      try { resData = await api('/api/admin/infra/resources'); } catch (e) { main.replaceChildren(el('div', { class: 'err' }, e.message)); return; }
+      if (sub !== 'resources') return; // تبويب تغيّر أثناء التحميل
+      main.replaceChildren(resources(resData));
+      return;
+    }
     main.replaceChildren(sub === 'tree' ? tree() : sub === 'map' ? map() : services());
-    frame.classList.toggle('full', sub === 'services');
   }
   paintMain();
   if (selected && byKey.has(selected)) openNode(selected, true); else panel.replaceChildren(el('p', { class: 'muted' }, 'اختر جهازًا من الشجرة أو الخريطة لعرض بطاقته.'));

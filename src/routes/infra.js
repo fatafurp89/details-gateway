@@ -114,6 +114,20 @@ export default async function infraRoutes(app) {
     return { nodes: nodes.map((n) => decorate(n, now)), links: links.rows, services: services.rows, systems: systems.rows, secrets_enabled: !!secretsKey, now: now.toISOString() };
   });
 
+  // لوحة «مراقبة الموارد»: كل الأجهزة ذات الوكيل الحي، بياناتها اللحظية + سجل مختصر لكل واحد
+  app.get('/api/admin/infra/resources', guard, async () => {
+    const now = new Date();
+    const nodes = (await loadNodes()).filter((n) => n.status_source === 'agent').map((n) => decorate(n, now));
+    const keys = nodes.map((n) => n.key);
+    const history = keys.length ? (await db.query(
+      `SELECT node_key, reported_at, payload->'load'->0 AS load1, payload->'mem' AS mem FROM infra_status
+        WHERE node_key = ANY($1) AND NOT coalesce((payload->>'probe')::boolean, false) AND reported_at > now() - interval '24 hours'
+        ORDER BY node_key, reported_at`, [keys])).rows : [];
+    const byNode = new Map(keys.map((k) => [k, []]));
+    for (const r of history) byNode.get(r.node_key)?.push({ reported_at: r.reported_at, load1: r.load1, mem: r.mem });
+    return { nodes, history: Object.fromEntries(byNode), now: now.toISOString() };
+  });
+
   app.get('/api/admin/infra/node/:key', guard, async (req, reply) => {
     const key = req.params.key;
     if (!validKey(key)) return reply.code(400).send({ error: MSG.badRequest });

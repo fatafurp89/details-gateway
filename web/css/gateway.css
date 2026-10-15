@@ -178,6 +178,13 @@ textarea{width:100%; min-height:120px; font:13px Arial,Tahoma,sans-serif; border
 .ibar-fill{height:100%; background:#16a34a; border-radius:99px; transition:width .3s}
 .ibar.warn .ibar-fill{background:#d97706} .ibar.bad .ibar-fill{background:#dc2626}
 .ibar-txt{position:absolute; inset:0; display:grid; place-items:center; font-size:10.5px; color:var(--ink); mix-blend-mode:multiply}
+.ires-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:14px}
+.icard{background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:13.5px}
+.icard.off{opacity:.6}
+.icard h3{margin:0; font-size:15px; color:var(--navy)}
+.icard h4.small{margin:12px 0 4px; font-size:12px; color:var(--mut); font-weight:600}
+.ispark-wrap{background:#f8fafc; border-radius:8px; padding:4px}
+.ispark{display:block; width:100%; height:auto}
 .idisks{display:grid; gap:6px}
 .idisk{display:grid; grid-template-columns:90px 1fr auto; gap:8px; align-items:center; font-size:12.5px}
 .isvcs{display:flex; flex-wrap:wrap; gap:4px; direction:ltr}

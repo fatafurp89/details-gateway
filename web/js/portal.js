@@ -75,6 +75,7 @@
   badges(); setInterval(badges, 30000);
   $('permslink').hidden = me.employee.role !== 'admin'; // الخادم يفرض ذلك أيضًا (مسارات الإدارة للمدير فقط)
   $('infralink').hidden = me.employee.role !== 'admin';
+  $('resourceslink').hidden = me.employee.role !== 'admin';
 
   const badgeText = { live: 'يعمل', soon: 'قيد التجهيز', off: 'متوقف مؤقتًا' };
   // أنظمة الرأس (placement = header، مثل «بوابة الموظف»): زر أيقونة صغير بجوار الاسم، يُفتح في تبويب جديد، لا بطاقة في الشبكة
