@@ -115,6 +115,11 @@
     const h = document.createElement('h2'); h.textContent = s.name;
     if (isCompact) {
       a.append(icon, h);
+      // «الروابط السريعة»: نافذة منبثقة واسعة بدل تبويب جديد (تبقي البوابة مفتوحة وتُشعر بأنها جزء منها)
+      if (s.key === 'links' && s.href) {
+        a.removeAttribute('target');
+        a.addEventListener('click', (e) => { e.preventDefault(); openQuickLinksModal(s.href, s.name); });
+      }
       toolsbar.append(a);
       toolsCount++;
       continue;
@@ -158,6 +163,25 @@
     $('note').textContent = 'لا توجد أنظمة مفعّلة لحسابك بعد. تواصل مع مدير النظام لمنحك الصلاحيات المناسبة.';
   }
 })();
+
+// نافذة منبثقة واسعة لعرض نظام داخلي (iframe) بدل فتح تبويب جديد
+function openQuickLinksModal(href, title) {
+  document.getElementById('qlm-overlay')?.remove();
+  const ov = document.createElement('div'); ov.className = 'qlm-overlay'; ov.id = 'qlm-overlay';
+  const box = document.createElement('div'); box.className = 'qlm-box'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', title);
+  const head = document.createElement('div'); head.className = 'qlm-head';
+  const h = document.createElement('b'); h.textContent = title;
+  const close = document.createElement('button'); close.className = 'btn small'; close.type = 'button'; close.textContent = 'إغلاق';
+  const closeFn = () => { ov.remove(); document.removeEventListener('keydown', onEsc); };
+  close.onclick = closeFn;
+  const onEsc = (e) => { if (e.key === 'Escape') closeFn(); };
+  document.addEventListener('keydown', onEsc);
+  head.append(h, close);
+  const frame = document.createElement('iframe'); frame.className = 'qlm-frame'; frame.src = href; frame.title = title;
+  box.append(head, frame); ov.append(box);
+  ov.addEventListener('click', (e) => { if (e.target === ov) closeFn(); });
+  document.body.append(ov);
+}
 
 // Split-horizon without DNS tricks: if the office-local address answers from this browser, use it.
 async function probeLocal(card, s) {

@@ -185,6 +185,11 @@ textarea{width:100%; min-height:120px; font:13px Arial,Tahoma,sans-serif; border
 .icard h4.small{margin:12px 0 4px; font-size:12px; color:var(--mut); font-weight:600}
 .ispark-wrap{background:#f8fafc; border-radius:8px; padding:4px}
 .ispark{display:block; width:100%; height:auto}
+.qlm-overlay{position:fixed; inset:0; background:rgba(15,23,42,.55); display:grid; place-items:center; z-index:80; padding:3vh 3vw}
+.qlm-box{background:#fff; width:min(1180px,94vw); height:90vh; border-radius:16px; border:3px solid var(--gold); box-shadow:0 24px 70px rgba(0,0,0,.35); display:flex; flex-direction:column; overflow:hidden}
+.qlm-head{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 16px; background:var(--g-soft); border-bottom:1px solid var(--line)}
+.qlm-head b{color:var(--navy); font-size:15px}
+.qlm-frame{flex:1; width:100%; border:0}
 .idisks{display:grid; gap:6px}
 .idisk{display:grid; grid-template-columns:90px 1fr auto; gap:8px; align-items:center; font-size:12.5px}
 .isvcs{display:flex; flex-wrap:wrap; gap:4px; direction:ltr}
