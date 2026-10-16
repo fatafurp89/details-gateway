@@ -39,13 +39,45 @@
   // تواريخ YYYY-MM-DD تُعرض يسار-يمين دائمًا (وإلا تنعكس داخل النص العربي)
   const dt = (d) => (d ? el('bdi', { dir: 'ltr', class: 'dt' }, String(d).slice(0, 10)) : '—');
   const pctTxt = (n) => (n == null || n === '' ? '—' : Number(n) + '%');
-  const expPill = (d) => {
-    if (!d) return el('span', { class: 'pill exp-none' }, 'بلا تاريخ');
+  const expPill = (d, isUnlimited = false) => {
+    if (isUnlimited) return el('span', { class: 'pill pill-unlimited', title: 'مستند دائم غير محدود الصلاحية' }, '♾️ غير محدود');
+    if (!d) return el('span', { class: 'pill pill-unknown', title: 'تاريخ الانتهاء غير محدد' }, '❓ غير معروف');
     const n = daysUntil(d);
-    if (n < 0) return el('span', { class: 'pill exp-expired', title: fmtDate(d) }, 'منتهٍ منذ ' + dayWord(n));
-    if (n === 0) return el('span', { class: 'pill exp-expired', title: fmtDate(d) }, 'ينتهي اليوم');
-    if (n <= WARN_DAYS) return el('span', { class: 'pill exp-expiring', title: fmtDate(d) }, 'ينتهي خلال ' + dayWord(n));
-    return el('span', { class: 'pill exp-ok', title: 'باقٍ ' + dayWord(n) }, 'ساري حتى ', dt(d));
+    if (n < 0) return el('span', { class: 'pill exp-expired', title: fmtDate(d) }, '🔴 منتهٍ منذ ' + dayWord(n));
+    if (n === 0) return el('span', { class: 'pill exp-expired', title: fmtDate(d) }, '🔴 ينتهي اليوم');
+    if (n <= WARN_DAYS) return el('span', { class: 'pill exp-expiring', title: fmtDate(d) }, '🟡 ينتهي خلال ' + dayWord(n));
+    return el('span', { class: 'pill exp-ok', title: 'ساري حتى ' + fmtDate(d) }, '🟢 ساري (متبقي ' + dayWord(n) + ')');
+  };
+  const docExpiryBlock = (d) => {
+    const isUnlimited = !!d?.is_unlimited;
+    const expiresOn = d?.expires_on;
+    const pill = expPill(expiresOn, isUnlimited);
+    if (isUnlimited) {
+      return el('div', { class: 'cdoc-validity-cell' },
+        pill,
+        el('div', { class: 'cdoc-countdown unlimited' }, '🛡️ دائم · بلا انتهاء')
+      );
+    }
+    if (!expiresOn) {
+      return el('div', { class: 'cdoc-validity-cell' },
+        pill,
+        el('div', { class: 'cdoc-countdown unknown' }, 'لم يُحدد التاريخ')
+      );
+    }
+    const n = daysUntil(expiresOn);
+    let cls = 'ok', txt = '⏱️ متبقي ' + dayWord(n);
+    if (n < 0) {
+      cls = 'expired'; txt = '⚠️ منتهي منذ ' + dayWord(n);
+    } else if (n === 0) {
+      cls = 'expired'; txt = '⚠️ ينتهي اليوم!';
+    } else if (n <= WARN_DAYS) {
+      cls = 'warning'; txt = '⏳ متبقي ' + dayWord(n);
+    }
+    return el('div', { class: 'cdoc-validity-cell' },
+      pill,
+      el('div', { class: 'cdoc-countdown ' + cls }, txt),
+      el('div', { class: 'cdoc-date-sub' }, 'ينتهي: ', dt(expiresOn))
+    );
   };
   const link = (url, text) => (url ? el('a', { href: url, target: '_blank', rel: 'noopener' }, text || url) : '');
   const host = (u) => { try { return new URL(u).host; } catch { return u; } };
@@ -90,6 +122,24 @@
       else { inp = el('input', { type: fd.type || 'text', placeholder: fd.ph || null, dir: fd.dir || null, step: fd.type === 'number' ? 'any' : null }); inp.value = v ?? ''; }
       inputs[fd.k] = inp;
       f.append(el('label', { class: fd.span2 ? 'span2' : null }, fd.label, inp));
+    }
+    const expInp = inputs['expires_on'] || inputs['v.expires_on'];
+    const unlimInp = inputs['is_unlimited'] || inputs['v.is_unlimited'];
+    if (unlimInp && expInp) {
+      const syncUnlimited = () => {
+        if (unlimInp.checked) {
+          expInp.disabled = true;
+          expInp.value = '';
+          expInp.style.opacity = '0.4';
+          expInp.style.pointerEvents = 'none';
+        } else {
+          expInp.disabled = false;
+          expInp.style.opacity = '1';
+          expInp.style.pointerEvents = 'auto';
+        }
+      };
+      unlimInp.addEventListener('change', syncUnlimited);
+      syncUnlimited();
     }
     f.append(el('div', { class: 'acts' }, el('button', { class: 'btn primary', type: 'submit' }, 'حفظ'), el('button', { class: 'btn', type: 'button', on: { click: closeForm } }, 'إلغاء')));
     f.onsubmit = async (e) => {
@@ -380,28 +430,49 @@
       const cur = d.versions.find((v) => v.is_current) || null;
       const open = openDocs.has(d.id);
       rows.push(el('tr', {},
-        el('td', {}, el('div', { class: 'cdoc-title' }, el('button', { class: 'linkbtn', type: 'button', title: 'سجل الإصدارات', on: { click: () => { open ? openDocs.delete(d.id) : openDocs.add(d.id); paintEntities(); } } }, open ? '▾' : '▸'), el('b', {}, d.title_ar), d.admin_only ? el('span', { class: 'pill off', title: 'ملفه للمشرف العام فقط' }, '🔒 مقيّد') : ''),
+        el('td', { class: 'cdoc-main-col' },
+          el('div', { class: 'cdoc-title' },
+            el('button', { class: 'linkbtn', type: 'button', title: 'سجل الإصدارات والمستندات الإضافية', on: { click: () => { open ? openDocs.delete(d.id) : openDocs.add(d.id); paintEntities(); } } }, open ? '▾' : '▸'),
+            el('b', { class: 'cdoc-name' }, d.title_ar),
+            el('span', { class: 'cdoc-vcount', title: 'عدد الإصدارات والمرفقات المرفوعة' }, d.versions.length + (d.versions.length === 1 ? ' ملف' : ' ملفات')),
+            d.admin_only ? el('span', { class: 'pill off', title: 'ملفه للمشرف العام فقط' }, '🔒 مقيّد') : ''),
+          (d.doc_number || d.issuer_ar) ? el('div', { class: 'muted small' },
+            d.doc_number ? el('span', { class: 'cdoc-submeta ltr' }, 'الرقم: ' + d.doc_number) : '',
+            d.issuer_ar ? el('span', { class: 'cdoc-submeta' }, 'الجهة: ' + d.issuer_ar) : '') : '',
           d.notes ? el('div', { class: 'muted small cnotes' }, d.notes) : ''),
         el('td', {}, el('span', { class: 'pill kind' }, AR.dkind[d.kind] || d.kind)),
-        el('td', {}, d.doc_number ? el('span', { class: 'ltr' }, d.doc_number) : '', d.issuer_ar ? el('div', { class: 'muted small' }, d.issuer_ar) : (d.doc_number ? '' : '—')),
         el('td', {}, fileCell(cur, d.title_ar, d.admin_only)),
-        el('td', {}, cur ? 'إصدار ' + cur.version_no + ' من ' + d.versions.length : '—'), el('td', {}, dt(d.issued_on)), el('td', {}, dt(d.expires_on)), el('td', {}, expPill(d.expires_on)),
-        el('td', {}, cur?.uploaded_by_name ? cur.uploaded_by_name + ' · ' + fmtDT(cur.uploaded_at) : (cur ? fmtDT(cur.uploaded_at) : '—')),
-        rowActs(smallBtn('⬆ رفع إصدار', () => versionForm(d, null), 'primary'), smallBtn('تعديل', () => documentForm(d, docEntity(d))),
+        el('td', {}, docExpiryBlock(d)),
+        el('td', {}, cur ? 'إصدار ' + cur.version_no + ' من ' + d.versions.length : '—'),
+        el('td', {}, cur?.uploaded_by_name ? cur.uploaded_by_name + ' · ' + fmtDT(cur.uploaded_at) : (cur ? fmtDT(cur.uploaded_at) : (d.issued_on ? 'صدر: ' + d.issued_on : '—'))),
+        rowActs(
+          smallBtn('⬆ تحديث وإرفاق ملف', () => updateDocForm(d), 'primary cdoc-btn-update'),
+          smallBtn('تعديل', () => documentForm(d, docEntity(d))),
           smallBtn('حذف', () => { if (confirmDel('مستند «' + d.title_ar + '» وكل إصداراته')) run(() => api('/api/admin/company/documents/' + d.id, {}, 'DELETE'), 'تم الحذف'); }, 'danger'))));
-      if (open) rows.push(el('tr', { class: 'cver' }, el('td', { colspan: data.admin ? 10 : 9 }, d.versions.length ? el('table', { class: 'dense' },
-        headRow(['الإصدار', 'الملف', 'الإصدار في', 'ينتهي في', 'رُفع بواسطة', 'في', 'ملاحظات']),
-        el('tbody', {}, ...d.versions.map((v) => el('tr', {},
-          el('td', {}, 'إصدار ' + v.version_no + ' ', v.is_current ? el('span', { class: 'pill on' }, 'الحالي') : ''),
-          el('td', {}, fileCell(v, d.title_ar + ' (إصدار ' + v.version_no + ')', d.admin_only)),
-          el('td', {}, dt(v.issued_on)), el('td', {}, v.expires_on ? el('span', {}, dt(v.expires_on), ' ', expPill(v.expires_on)) : '—'), el('td', {}, v.uploaded_by_name || '—'), el('td', {}, fmtDT(v.uploaded_at)), el('td', { class: 'wrap' }, v.notes || ''),
-          rowActs(!v.is_current ? smallBtn('اجعله الحالي', () => run(() => api('/api/admin/company/documents/' + d.id + '/versions/' + v.id, { ...v, is_current: true }, 'PUT'), 'أصبح الإصدار الحالي')) : '',
-            smallBtn('تعديل', () => versionForm(d, v)),
-            smallBtn('حذف', () => { if (confirmDel('الإصدار ' + v.version_no)) run(() => api('/api/admin/company/documents/' + d.id + '/versions/' + v.id, {}, 'DELETE'), 'تم الحذف'); }, 'danger'))))))
-        : el('p', { class: 'muted small cpad' }, 'لا إصدارات بعد.'))));
+      if (open) rows.push(el('tr', { class: 'cver' }, el('td', { colspan: data.admin ? 7 : 6 },
+        el('div', { class: 'cver-panel' },
+          el('div', { class: 'cver-head' },
+            el('b', {}, 'سجل الإصدارات والمستندات الإضافية لـ«' + d.title_ar + '» (' + d.versions.length + ')'),
+            el('span', { class: 'spacer' }),
+            data.admin ? smallBtn('+ إرفاق مستند / إصدار إضافي لهذا المستند', () => versionForm(d, null), 'primary') : ''),
+          d.versions.length ? el('table', { class: 'dense' },
+            headRow(['الإصدار', 'الملف', 'تاريخ الإصدار', 'الصلاحية والعداد', 'رُفع بواسطة', 'تاريخ الرفع', 'ملاحظات']),
+            el('tbody', {}, ...d.versions.map((v) => el('tr', {},
+              el('td', {}, 'إصدار ' + v.version_no + ' ', v.is_current ? el('span', { class: 'pill on' }, 'الحالي المعرُوض') : ''),
+              el('td', {}, fileCell(v, d.title_ar + ' (إصدار ' + v.version_no + ')', d.admin_only)),
+              el('td', {}, dt(v.issued_on)),
+              el('td', {}, docExpiryBlock(v)),
+              el('td', {}, v.uploaded_by_name || '—'),
+              el('td', {}, fmtDT(v.uploaded_at)),
+              el('td', { class: 'wrap' }, v.notes || ''),
+              rowActs(
+                !v.is_current ? smallBtn('اجعله الحالي', () => run(() => api('/api/admin/company/documents/' + d.id + '/versions/' + v.id, { ...v, is_current: true }, 'PUT'), 'أصبح الإصدار الحالي')) : '',
+                smallBtn('تعديل', () => versionForm(d, v)),
+                smallBtn('حذف', () => { if (confirmDel('الإصدار ' + v.version_no)) run(() => api('/api/admin/company/documents/' + d.id + '/versions/' + v.id, {}, 'DELETE'), 'تم الحذف'); }, 'danger'))))))
+          : el('p', { class: 'muted small cpad' }, 'لا إصدارات بعد.')))));
     }
     view.append(el('div', { class: 'tablewrap' }, el('table', { class: 'dense' },
-      headRow(['المستند', 'النوع', 'الرقم / الجهة', 'الملف الحالي', 'الإصدار', 'صدر في', 'ينتهي في', 'الصلاحية', 'آخر رفع']), el('tbody', {}, ...rows))));
+      headRow(['المستند والبيانات', 'النوع', 'الملف الحالي', 'الصلاحية والعداد', 'الإصدار', 'آخر تحديث']), el('tbody', {}, ...rows))));
   }
   async function createChecklist(ent) {
     if (!confirm('إنشاء ' + CHECKLIST.length + ' مستندات فارغة (بلا ملفات) لـ«' + ent.name_ar + '» لتُرفع أوراقها لاحقًا؟')) return;
@@ -410,19 +481,77 @@
       toast('تم إنشاء قائمة المستندات'); await load();
     } catch (e) { toast(e.message, true); await load(); }
   }
+
+  // تحديث مستند: رفع ملف وإصدار جديد وتحديث رقم الوثيقة أو جهة الإصدار أو التواريخ
+  const updateDocForm = (d) => {
+    openForm('تحديث مستند «' + d.title_ar + '» وإرفاق إصدار / ملف جديد', [
+      { k: 'doc_number', label: 'رقم الوثيقة / المستند', dir: 'ltr' },
+      { k: 'issuer_ar', label: 'جهة الإصدار' },
+      { k: 'file', label: 'الملف المرفق الجديد (PDF / صورة / Word / Excel — حتى 25 م.ب)', type: 'file', span2: true },
+      { k: 'issued_on', label: 'تاريخ الإصدار', type: 'date' },
+      { k: 'is_unlimited', label: 'مستند دائم / غير محدود الصلاحية (بدون تاريخ انتهاء)', type: 'checkbox' },
+      { k: 'expires_on', label: 'تاريخ الانتهاء (يُحسب منه العداد التنازلي والتنبيهات)', type: 'date' },
+      { k: 'file_name', label: 'اسم الملف المعروض (اختياري)', dir: 'ltr', ph: 'document.pdf' },
+      { k: 'file_url', label: 'أو رابط خارجي للملف (https)', dir: 'ltr' },
+      { k: 'notes', label: 'ملاحظات التحديث / الإصدار الجديد', type: 'textarea', span2: true },
+      { k: 'is_current', label: 'تعيين هذا الإصدار كإصدار حالي معتمد', type: 'checkbox' },
+    ], {
+      doc_number: d.doc_number || '',
+      issuer_ar: d.issuer_ar || '',
+      issued_on: d.issued_on || '',
+      is_unlimited: !!d.is_unlimited,
+      expires_on: d.is_unlimited ? '' : (d.expires_on || ''),
+      notes: '',
+      is_current: true,
+    }, async (body, file) => {
+      // 1) Update metadata on document
+      await api('/api/admin/company/documents/' + d.id, {
+        title_ar: d.title_ar,
+        kind: d.kind,
+        doc_number: body.doc_number,
+        issuer_ar: body.issuer_ar,
+        admin_only: d.admin_only,
+        is_unlimited: body.is_unlimited,
+        sort: d.sort,
+        entity_id: docEntity(d),
+      }, 'PUT');
+
+      // 2) If file or external link or new dates are supplied, add as new version
+      if (file || body.file_url || body.issued_on || body.expires_on || body.notes || body.is_unlimited) {
+        const verBody = {
+          file_name: body.file_name,
+          file_url: body.file_url,
+          issued_on: body.issued_on,
+          expires_on: body.is_unlimited ? null : body.expires_on,
+          is_unlimited: body.is_unlimited,
+          notes: body.notes,
+          is_current: body.is_current !== false,
+        };
+        openDocs.add(d.id);
+        if (file) return upload('/api/admin/company/documents/' + d.id + '/versions', verBody, file);
+        return api('/api/admin/company/documents/' + d.id + '/versions', verBody);
+      }
+      return { ok: true };
+    });
+  };
+
   const VERSION_META = [
-    { k: 'issued_on', label: 'تاريخ الإصدار', type: 'date' }, { k: 'expires_on', label: 'تاريخ الانتهاء (يُشغّل التنبيهات)', type: 'date' },
-    { k: 'file_name', label: 'اسم الملف المعروض (اختياري)', dir: 'ltr', ph: 'document.pdf' }, { k: 'file_url', label: 'رابط خارجي بدل الرفع (https)', dir: 'ltr' },
+    { k: 'issued_on', label: 'تاريخ الإصدار', type: 'date' },
+    { k: 'is_unlimited', label: 'مستند دائم / غير محدود الصلاحية (بدون تاريخ انتهاء)', type: 'checkbox' },
+    { k: 'expires_on', label: 'تاريخ الانتهاء (يُشغّل التنبيهات والعداد)', type: 'date' },
+    { k: 'file_name', label: 'اسم الملف المعروض (اختياري)', dir: 'ltr', ph: 'document.pdf' },
+    { k: 'file_url', label: 'رابط خارجي بدل الرفع (https)', dir: 'ltr' },
     { k: 'notes', label: 'ملاحظات الإصدار', type: 'textarea', span2: true },
   ];
   const NEW_VERSION_FIELDS = [{ k: 'file', label: 'الملف (PDF / صورة / Word / Excel — حتى 25 م.ب)', type: 'file', span2: true }, ...VERSION_META, { k: 'is_current', label: 'اجعله الإصدار الحالي', type: 'checkbox' }];
   const documentForm = (d, entityId) => openForm(d ? 'تعديل مستند «' + d.title_ar + '»' : 'إضافة مستند إلى «' + entName(entityId) + '» (ثم ارفع ملفه كإصدار أول)', [
     { k: 'title_ar', label: 'عنوان المستند' }, { k: 'kind', label: 'النوع', type: 'select', options: opts(AR.dkind) }, { k: 'entity_id', label: 'الكيان', type: 'select', options: entSelect() },
     { k: 'doc_number', label: 'رقم الوثيقة / الترخيص', dir: 'ltr' }, { k: 'issuer_ar', label: 'جهة الإصدار' }, { k: 'sort', label: 'الترتيب', type: 'number', dir: 'ltr' },
+    { k: 'is_unlimited', label: 'مستند دائم / غير محدود الصلاحية (بدون انتهاء)', type: 'checkbox' },
     { k: 'admin_only', label: 'ملفه مقيّد للمشرف العام (هويات/آيبان/توقيعات)', type: 'checkbox' },
     { k: 'notes', label: 'ملاحظات', type: 'textarea', span2: true },
     ...(d ? [] : [{ k: 'file', label: 'الملف (PDF / صورة / Word / Excel — حتى 25 م.ب)', type: 'file', span2: true }, ...VERSION_META.filter((f) => f.k !== 'file_name').map((f) => ({ ...f, k: 'v.' + f.k }))]),
-  ], d ? { ...d, entity_id: entityId } : { sort: 100, kind: 'other', entity_id: entityId }, async (body, file) => {
+  ], d ? { ...d, entity_id: entityId, is_unlimited: !!d.is_unlimited } : { sort: 100, kind: 'other', entity_id: entityId, is_unlimited: false }, async (body, file) => {
     if (d) return api('/api/admin/company/documents/' + d.id, body, 'PUT');
     const out = {}; const version = {};
     for (const [k, v] of Object.entries(body)) { if (k.startsWith('v.')) version[k.slice(2)] = v; else out[k] = v; }
@@ -433,7 +562,7 @@
     return r;
   });
   const versionForm = (d, v) => openForm(v ? 'تعديل الإصدار ' + v.version_no + ' من «' + d.title_ar + '»' : 'رفع إصدار جديد لـ«' + d.title_ar + '»', v ? VERSION_META : NEW_VERSION_FIELDS,
-    v || { is_current: true }, async (body, file) => {
+    v ? { ...v, is_unlimited: !!v.is_unlimited } : { is_current: true, is_unlimited: false }, async (body, file) => {
       if (v) return api('/api/admin/company/documents/' + d.id + '/versions/' + v.id, body, 'PUT');
       openDocs.add(d.id);
       if (file) return upload('/api/admin/company/documents/' + d.id + '/versions', body, file);

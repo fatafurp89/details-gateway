@@ -13,7 +13,7 @@ export async function runExpirySweep(db, now = new Date()) {
   const [{ rows: documents }, { rows: platforms }, { rows: delegations }, { rows: admins }] = await Promise.all([
     // documents of the foreign entities carry the entity name in the title (the main Saudi entity keeps the plain title)
     db.query(`SELECT d.id, CASE WHEN e.id IS NOT NULL AND e.profile_id IS NULL THEN e.name_ar || ' — ' || d.title_ar ELSE d.title_ar END AS title_ar, d.expires_on::text AS expires_on
-      FROM company_documents d LEFT JOIN company_entities e ON e.id = d.entity_id WHERE d.expires_on IS NOT NULL`),
+      FROM company_documents d LEFT JOIN company_entities e ON e.id = d.entity_id WHERE d.expires_on IS NOT NULL AND (d.is_unlimited IS NULL OR d.is_unlimited = false)`),
     db.query('SELECT id, name_ar, expiry_date::text AS expiry_date, status, account_holder_id FROM company_platforms WHERE expiry_date IS NOT NULL'),
     db.query('SELECT id, delegate_name, valid_to::text AS valid_to, status, employee_id FROM company_delegations WHERE valid_to IS NOT NULL'),
     db.query("SELECT id FROM employees WHERE role = 'admin' AND active AND (expires_at IS NULL OR expires_at > now())"),

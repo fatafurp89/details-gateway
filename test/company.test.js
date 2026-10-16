@@ -94,8 +94,12 @@ test('validateOwner / validatePlatform / validateDelegation / validateDocument /
   assert.equal(validateDelegation({ delegate_name: 'أحمد', scope_ar: 'إصدار الرخص', valid_to: '2027-01-01' }).value.status, 'active');
   assert.ok(validateDocument({ title_ar: 'x', kind: 'passport' }).error);
   assert.equal(validateDocument({ title_ar: 'السجل', kind: 'cr' }).value.kind, 'cr');
+  assert.equal(validateDocument({ title_ar: 'عقد دائم', kind: 'contract', is_unlimited: true }).value.is_unlimited, true);
   assert.ok(validateVersion({ file_url: 'http://insecure' }).error);
   assert.ok(validateVersion({ issued_on: '2027-01-01', expires_on: '2026-01-01' }).error);
   const v = validateVersion({ file_name: 'document.pdf', issued_on: '2025-10-30', expires_on: '2027-10-29' }).value;
   assert.equal(v.file_url, null); assert.equal(v.file_name, 'document.pdf');
+  const vu = validateVersion({ file_name: 'perm.pdf', issued_on: '2025-10-30', is_unlimited: true }).value;
+  assert.equal(vu.is_unlimited, true); assert.equal(vu.expires_on, null);
+  assert.equal(expiryState('2025-01-01', now, 30, true), 'unlimited');
 });

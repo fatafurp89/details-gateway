@@ -16,8 +16,8 @@ const PLATFORM_COLS = `p.id, p.name_ar, p.category, p.url, p.account_username, p
   p.secret_node_key, p.secret_ref, p.sort, p.updated_at, e.full_name AS account_holder_name, q.title AS quick_link_title, q.url AS quick_link_url`;
 const DELEGATION_COLS = `g.id, g.delegate_name, g.employee_id, g.platform_id, g.scope_ar, ${D('g.valid_from')}, ${D('g.valid_to')}, g.document_url, g.status, g.notes, g.updated_at,
   e.full_name AS employee_name, p.name_ar AS platform_name`;
-const DOC_COLS = `d.id, d.entity_id, d.title_ar, d.kind, d.admin_only, d.doc_number, d.issuer_ar, d.file_url, d.file_name, ${D('d.issued_on')}, ${D('d.expires_on')}, d.notes, d.sort, d.created_at, d.updated_at`;
-const VERSION_COLS = `v.id, v.document_id, v.version_no, v.file_url, v.file_name, ${D('v.issued_on')}, ${D('v.expires_on')}, v.uploaded_by, v.uploaded_at, v.notes, v.is_current,
+const DOC_COLS = `d.id, d.entity_id, d.title_ar, d.kind, d.admin_only, d.doc_number, d.issuer_ar, d.file_url, d.file_name, ${D('d.issued_on')}, ${D('d.expires_on')}, COALESCE(d.is_unlimited, false) AS is_unlimited, d.notes, d.sort, d.created_at, d.updated_at`;
+const VERSION_COLS = `v.id, v.document_id, v.version_no, v.file_url, v.file_name, ${D('v.issued_on')}, ${D('v.expires_on')}, COALESCE(v.is_unlimited, false) AS is_unlimited, v.uploaded_by, v.uploaded_at, v.notes, v.is_current,
   (v.storage_path IS NOT NULL) AS has_file, v.size::int AS size, v.mime, v.sha256, e.full_name AS uploaded_by_name`;
 const BANK_COLS = `b.id, b.bank_name_ar, b.bank_name_en, b.account_name, b.iban, b.account_no, b.customer_no, b.swift, b.currency, b.account_type, b.branch, ${D('b.opened_on')}, b.status,
   b.signatories_ar, b.document_id, b.platform_id, b.secret_node_key, b.secret_ref, b.notes, b.sort, b.updated_at, d.title_ar AS document_title, p.name_ar AS platform_name`;
@@ -27,7 +27,7 @@ export const fileUrl = (docId, vid) => `/api/company/documents/${docId}/versions
 /** Expired / expiring-within-30-days count (tile badge). */
 export async function countCompanyAlerts(db, now = new Date()) {
   const [{ rows: documents }, { rows: platforms }, { rows: delegations }] = await Promise.all([
-    db.query('SELECT id, title_ar, expires_on::text AS expires_on FROM company_documents WHERE expires_on IS NOT NULL'),
+    db.query('SELECT id, title_ar, expires_on::text AS expires_on FROM company_documents WHERE expires_on IS NOT NULL AND (is_unlimited IS NULL OR is_unlimited = false)'),
     db.query('SELECT id, name_ar, expiry_date::text AS expiry_date, status, account_holder_id FROM company_platforms WHERE expiry_date IS NOT NULL'),
     db.query('SELECT id, delegate_name, valid_to::text AS valid_to, status, employee_id FROM company_delegations WHERE valid_to IS NOT NULL'),
   ]);
@@ -220,19 +220,21 @@ export default async function companyRoutes(app) {
   // documents (metadata) — the file/dates live in versions; a new document may carry its first version inline
   const syncCurrent = async (c, docId) => {
     await c.query(
-      `UPDATE company_documents d SET file_url = v.file_url, file_name = v.file_name, issued_on = v.issued_on, expires_on = v.expires_on, updated_at = now()
+      `UPDATE company_documents d SET file_url = v.file_url, file_name = v.file_name, issued_on = v.issued_on, expires_on = v.expires_on, is_unlimited = COALESCE(v.is_unlimited, false), updated_at = now()
          FROM company_document_versions v WHERE v.document_id = d.id AND v.is_current AND d.id = $1`, [docId]);
   };
-  // ver: { file_url, file_name, issued_on, expires_on, notes }; file (optional): { stream, name, mime } stored under files/company/<doc>/<n>-<name>
+  // ver: { file_url, file_name, issued_on, expires_on, notes, is_unlimited }; file (optional): { stream, name, mime } stored under files/company/<doc>/<n>-<name>
   const addVersion = async (c, docId, ver, actor, file = null, makeCurrent = true) => {
     const { rows: [m] } = await c.query('SELECT COALESCE(max(version_no), 0) + 1 AS n FROM company_document_versions WHERE document_id = $1', [docId]);
     const n = Number(m.n);
     const stored = file ? await storeStream(storagePathFor(docId, n, file.name), file.stream) : null;
     if (makeCurrent) await c.query('UPDATE company_document_versions SET is_current = false WHERE document_id = $1 AND is_current', [docId]);
+    const isUnlimited = ver.is_unlimited === true || ver.is_unlimited === 'true';
+    const expiresOn = isUnlimited ? null : ver.expires_on;
     const { rows: [r] } = await c.query(
-      `INSERT INTO company_document_versions (document_id, version_no, file_url, file_name, issued_on, expires_on, uploaded_by, notes, is_current, storage_path, size, sha256, mime)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id, version_no`,
-      [docId, n, ver.file_url, file ? safeName(file.name) : ver.file_name, ver.issued_on, ver.expires_on, actor, ver.notes, makeCurrent,
+      `INSERT INTO company_document_versions (document_id, version_no, file_url, file_name, issued_on, expires_on, is_unlimited, uploaded_by, notes, is_current, storage_path, size, sha256, mime)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id, version_no`,
+      [docId, n, ver.file_url, file ? safeName(file.name) : ver.file_name, ver.issued_on, expiresOn, isUnlimited, actor, ver.notes, makeCurrent,
         stored?.storage_path ?? null, stored?.size ?? null, stored?.sha256 ?? null, file?.mime ?? null]);
     if (stored) await c.query('UPDATE company_document_versions SET file_url = $2 WHERE id = $1', [r.id, fileUrl(docId, r.id)]);
     await syncCurrent(c, docId);
@@ -278,8 +280,8 @@ export default async function companyRoutes(app) {
     const entityId = await resolveEntity(d.entity_id);
     if (entityId === false) return reply.code(400).send({ error: 'الكيان غير موجود' });
     const out = await tx(db, async (c) => {
-      const { rows: [r] } = await c.query('INSERT INTO company_documents (title_ar, kind, doc_number, issuer_ar, admin_only, notes, sort, entity_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id',
-        [d.title_ar, d.kind, d.doc_number, d.issuer_ar, d.admin_only, d.notes, d.sort, entityId]);
+      const { rows: [r] } = await c.query('INSERT INTO company_documents (title_ar, kind, doc_number, issuer_ar, admin_only, notes, sort, entity_id, is_unlimited) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id',
+        [d.title_ar, d.kind, d.doc_number, d.issuer_ar, d.admin_only, d.notes, d.sort, entityId, d.is_unlimited || false]);
       if (ver.value) await addVersion(c, r.id, ver.value, req.user.employee_id);
       return r;
     });
@@ -297,8 +299,8 @@ export default async function companyRoutes(app) {
     // entity_id omitted -> unchanged; given (or null = main entity) -> moves the document to that entity
     const moveTo = d.entity_id === undefined ? undefined : await resolveEntity(d.entity_id);
     if (moveTo === false) return reply.code(400).send({ error: 'الكيان غير موجود' });
-    const r = await db.query('UPDATE company_documents SET title_ar=$2, kind=$3, doc_number=$4, issuer_ar=$5, admin_only=$6, notes=$7, sort=$8, entity_id=CASE WHEN $9::boolean THEN $10::uuid ELSE entity_id END, updated_at=now() WHERE id=$1',
-      [req.params.id, d.title_ar, d.kind, d.doc_number, d.issuer_ar, d.admin_only, d.notes, d.sort, moveTo !== undefined, moveTo ?? null]);
+    const r = await db.query('UPDATE company_documents SET title_ar=$2, kind=$3, doc_number=$4, issuer_ar=$5, admin_only=$6, notes=$7, sort=$8, is_unlimited=$9, entity_id=CASE WHEN $10::boolean THEN $11::uuid ELSE entity_id END, updated_at=now() WHERE id=$1',
+      [req.params.id, d.title_ar, d.kind, d.doc_number, d.issuer_ar, d.admin_only, d.notes, d.sort, d.is_unlimited || false, moveTo !== undefined, moveTo ?? null]);
     if (!r.rowCount) return notFound(reply, 'المستند');
     await log(req, 'company.document.update', req.params.id, { title_ar: d.title_ar, ...(moveTo ? { entity_id: moveTo } : {}) });
     return { ok: true };
@@ -342,10 +344,12 @@ export default async function companyRoutes(app) {
     const makeCurrent = req.body?.is_current === true;
     const ok = await tx(db, async (c) => {
       // a stored file keeps its URL; its display name may be renamed but not blanked
+      const isUnlimited = v.value.is_unlimited === true || v.value.is_unlimited === 'true';
+      const expiresOn = isUnlimited ? null : v.value.expires_on;
       const r = await c.query(
         `UPDATE company_document_versions SET file_url = CASE WHEN storage_path IS NULL THEN $3 ELSE file_url END, file_name = CASE WHEN storage_path IS NULL THEN $4 ELSE COALESCE($4, file_name) END,
-           issued_on=$5, expires_on=$6, notes=$7 WHERE id=$2 AND document_id=$1`,
-        [req.params.id, req.params.vid, v.value.file_url, v.value.file_name, v.value.issued_on, v.value.expires_on, v.value.notes]);
+           issued_on=$5, expires_on=$6, is_unlimited=$7, notes=$8 WHERE id=$2 AND document_id=$1`,
+        [req.params.id, req.params.vid, v.value.file_url, v.value.file_name, v.value.issued_on, expiresOn, isUnlimited, v.value.notes]);
       if (!r.rowCount) return false;
       if (makeCurrent) {
         await c.query('UPDATE company_document_versions SET is_current = false WHERE document_id = $1 AND is_current AND id <> $2', [req.params.id, req.params.vid]);

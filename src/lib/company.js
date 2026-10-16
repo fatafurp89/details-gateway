@@ -47,8 +47,9 @@ export function maskBankAccounts(accounts, admin) {
   return accounts.map((a) => (admin ? a : { ...a, iban: maskId(a.iban), account_no: maskId(a.account_no), customer_no: maskId(a.customer_no) }));
 }
 
-/** 'expired' | 'expiring' | 'ok' | null (no date). */
-export function expiryState(date, now = new Date(), warnDays = EXPIRY_WARN_DAYS) {
+/** 'expired' | 'expiring' | 'ok' | 'unlimited' | null (no date). */
+export function expiryState(date, now = new Date(), warnDays = EXPIRY_WARN_DAYS, isUnlimited = false) {
+  if (isUnlimited) return 'unlimited';
   const d = daysUntil(date, now);
   if (d === null) return null;
   if (d < 0) return 'expired';
@@ -64,7 +65,7 @@ const dateOpt = (v, label) => {
 
 /**
  * One alert per document / platform / delegation that is expired or expires within `warnDays`.
- * items: { documents:[{id,title_ar,expires_on}], platforms:[{id,name_ar,expiry_date,account_holder_id}], delegations:[{id,delegate_name,valid_to,employee_id,status}] }
+ * items: { documents:[{id,title_ar,expires_on,is_unlimited}], platforms:[{id,name_ar,expiry_date,account_holder_id}], delegations:[{id,delegate_name,valid_to,employee_id,status}] }
  * Returns [{ kind, id, title_ar, expires_on, days_left, state, severity, url, employee_id }] sorted soonest first.
  */
 export function expiryAlerts(items, now = new Date(), warnDays = EXPIRY_WARN_DAYS) {
@@ -76,7 +77,10 @@ export function expiryAlerts(items, now = new Date(), warnDays = EXPIRY_WARN_DAY
     out.push({ kind, id, title_ar, expires_on: String(date).slice(0, 10), days_left, state, severity: state === 'expired' || days_left <= 7 ? 'urgent' : 'warn',
       url: `/company#${tab}`, employee_id: employee_id || null });
   };
-  for (const d of items.documents || []) push('document', d.id, d.title_ar, d.expires_on, null, 'documents');
+  for (const d of items.documents || []) {
+    if (d.is_unlimited) continue;
+    push('document', d.id, d.title_ar, d.expires_on, null, 'documents');
+  }
   for (const p of items.platforms || []) if (p.status !== 'closed') push('platform', p.id, p.name_ar, p.expiry_date, p.account_holder_id, 'platforms');
   for (const g of items.delegations || []) if (g.status === 'active') push('delegation', g.id, g.delegate_name, g.valid_to, g.employee_id, 'delegations');
   return out.sort((a, b) => a.days_left - b.days_left || a.title_ar.localeCompare(b.title_ar, 'ar'));
@@ -185,6 +189,7 @@ export function validateDocument(body) {
   if (!body || typeof body !== 'object') return { error: 'الطلب غير صالح' };
   const v = { title_ar: str(body.title_ar, 200), kind: str(body.kind, 20) || 'other', doc_number: opt(body.doc_number, 120), issuer_ar: opt(body.issuer_ar, 200),
     admin_only: body.admin_only === true || body.admin_only === 'true',
+    is_unlimited: body.is_unlimited === true || body.is_unlimited === 'true',
     notes: opt(body.notes, 2000), sort: Number.isFinite(+body.sort) ? Math.trunc(+body.sort) : 100 };
   // entity_id: undefined = not provided (keep / default to the main entity), null = explicitly unassigned
   if (body.entity_id !== undefined) { const id = opt(body.entity_id, 36); if (id !== null && !UUID_RE.test(id)) return { error: 'المعرّف غير صالح' }; v.entity_id = id; }
@@ -193,14 +198,19 @@ export function validateDocument(body) {
   return { value: v };
 }
 
-/** A document version: file_url (optional until uploads exist), file_name, issued_on, expires_on, notes. */
+/** A document version: file_url (optional until uploads exist), file_name, issued_on, expires_on, notes, is_unlimited. */
 export function validateVersion(body) {
   if (!body || typeof body !== 'object') return { error: 'الطلب غير صالح' };
-  const v = { file_url: opt(body.file_url, 2000), file_name: opt(body.file_name, 300), notes: opt(body.notes, 2000) };
+  const v = { file_url: opt(body.file_url, 2000), file_name: opt(body.file_name, 300), notes: opt(body.notes, 2000),
+    is_unlimited: body.is_unlimited === true || body.is_unlimited === 'true' };
   if (v.file_url !== null && !/^(https:\/\/|\/)/.test(v.file_url)) return { error: 'رابط الملف غير صالح' };
   const i = dateOpt(body.issued_on, 'تاريخ الإصدار'); if (i.error) return i; v.issued_on = i.value;
-  const e = dateOpt(body.expires_on, 'تاريخ الانتهاء'); if (e.error) return e; v.expires_on = e.value;
-  if (v.issued_on && v.expires_on && v.expires_on < v.issued_on) return { error: 'تاريخ الانتهاء قبل تاريخ الإصدار' };
+  if (v.is_unlimited) {
+    v.expires_on = null;
+  } else {
+    const e = dateOpt(body.expires_on, 'تاريخ الانتهاء'); if (e.error) return e; v.expires_on = e.value;
+    if (v.issued_on && v.expires_on && v.expires_on < v.issued_on) return { error: 'تاريخ الانتهاء قبل تاريخ الإصدار' };
+  }
   return { value: v };
 }
 
